@@ -7,7 +7,7 @@ const router = express.Router();
 const axios = require("axios");              // ✅ Python 서버 호출용
 const db = require("../config/db");          // ✅ 기존 DB 연결 모듈(너희 sensorRouter.js가 쓰는 거랑 동일)
 
-// ✅ Python FastAPI 서버 주소
+// ✅ Python FastAPI 서버 주소(로컬이면 localhost)
 // - 팀 환경에서 Python 서버가 다른 PC/IP에 있으면 여기만 바꾸면 됨
 const PYTHON_BASE_URL = "http://192.168.219.197:8000";
 
@@ -18,7 +18,7 @@ async function fetchLatestEventFromDB() {
   // ✅ Workbench에서 확인한 쿼리 그대로
   const sql = `
     SELECT *
-    FROM EVENT_LOG
+    FROM event_log
     ORDER BY event_date DESC
     LIMIT 1
   `;
@@ -28,7 +28,10 @@ async function fetchLatestEventFromDB() {
    * ❌ 콜백(db.query(sql, (err, rows)=>...)) 쓰면
    *    "Callback function is not available with promise clients." 에러남
    */
-  const [rows] = await db.query(sql);
+  const result = await db.query(sql);
+
+  // ✅ result가 [rows, fields] 형태면 rows만 꺼내기
+  const rows = Array.isArray(result) && Array.isArray(result[0]) ? result[0] : result;
 
   // ✅ 최신 1건 반환 (없으면 null)
   return rows && rows.length > 0 ? rows[0] : null;
