@@ -1,0 +1,1094 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GreenSync Homepage</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./core4_css/common.css" />
+  <link rel="stylesheet" href="./core4_css/home.css" />
+  <link rel="stylesheet" href="./core4_css/dashboard.css" />
+  <link rel="stylesheet" href="./core4_css/growth.css" />
+  <link rel="stylesheet" href="./core4_css/report.css" />
+  <link rel="stylesheet" href="./core4_css/settings.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="container top__inner">
+      <div class="brand" data-go-home>
+        <div class="brand__mark" aria-hidden="true">🍃</div>
+        <div class="brand__name">GreenSync</div>
+      </div>
+
+      <div class="top__right" id="auth-buttons">
+        <button class="link-btn" type="button" data-open-modal="login">로그인</button>
+        <button class="btn btn--solid" type="button" data-open-modal="signup">회원가입</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav">
+    <div class="container nav__inner">
+      <a class="nav__item nav__item--active" href="#" data-nav="home">홈</a>
+      <a class="nav__item" href="#" data-nav="dashboard">대시보드</a>
+      <a class="nav__item" href="#" data-nav="growth">성장 기록</a>
+      <a class="nav__item" href="#" data-nav="report">분석 리포트</a>
+      <a class="nav__item" href="#" data-nav="settings">환경 설정</a>
+    </div>
+  </nav>
+
+  <main class="hero page" id="page-home">
+    <div class="container hero__inner">
+      <section class="hero__text" aria-label="소개">
+        <div class="badge">by 식집사들</div>
+        <h1 class="hero__title">
+          스마트한 반려식물<br />
+          <span class="hero__title--green">케어 솔루션</span>
+        </h1>
+        <p class="hero__desc">
+          GreenSync는 IoT 센서와 데이터 분석을 통해<br />
+          당신의 반려식물을 더 건강하게 관리할 수 있도록 돕습니다.
+        </p>
+        <div class="hero__actions">
+          <button class="btn btn--solid btn--lg" type="button" data-open-modal="login">시작하기</button>
+          <button class="btn btn--outline btn--lg" type="button" data-open-modal="about">더 알아보기</button>
+        </div>
+      </section>
+      <section class="hero__media" aria-label="대표 이미지">
+        <div class="hero__imageWrap">
+          <img src="https://images.unsplash.com/photo-1660327413070-c771d88ab7fe?w=1200&auto=format&fit=crop&q=80" alt="실내 반려식물" />
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <section class="page hidden" id="page-dashboard">
+    <div class="dash container">
+      <aside class="dash__sidebar">
+        <div class="dash__title">대시보드</div>
+        <nav class="side-menu">
+          <button class="side-menu__item is-active" type="button" data-dash-tab="emotion">감정 상태 요약</button>
+          <button class="side-menu__item" type="button" data-dash-tab="env">환경 데이터</button>
+        </nav>
+      </aside>
+
+      <div class="dash__main">
+        <div class="dash__panel" id="dash-emotion">
+          <div class="msg">
+            <div class="msg__title">오늘의 메시지</div>
+            <div class="msg__text">"오늘도 산세테리아와 함께하는 좋은 하루입니다! 2일 후에 물을 줄 시간이에요."</div>
+          </div>
+          <h2 class="dash__h2">감정 상태 요약</h2>
+          <p class="dash__sub">식물의 현재 상태를 확인하세요</p>
+          <div class="plant-card">
+            <div class="plant-card__left">
+              <div class="plant-card__icon" aria-hidden="true">🌿</div>
+              <div>
+                <div class="plant-card__name">산세테리아 <span class="plant-card__badge">🙂</span></div>
+                <div class="plant-card__desc">상태가 안정적이에요.</div>
+              </div>
+            </div>
+            <button class="btn btn--ghost" type="button" data-open-modal="plant-detail">자세히 보기</button>
+          </div>
+        </div>
+
+        <div class="dash__panel hidden" id="dash-env">
+          <h2 class="dash__h2">환경 데이터</h2>
+          <p class="dash__sub">환경 데이터를 한눈에 확인하세요</p>
+
+          <div class="dash__section-title">
+            <div>실시간 환경 수치 <span class="pill">실시간</span></div>
+          </div>
+
+          <div class="room-card">
+            <div class="room-card__top">
+              <div><div class="room-card__plant">산세베리아</div></div>
+            </div>
+            <div class="room-grid">
+              
+              <div class="room-metric room-metric--temp">
+                <div class="room-metric__label">온도</div>
+                <div class="room-metric__value" id="current-temp">24.5°C</div>
+                <!-- <div class="room-metric__delta">평균 대비 +1.3°C</div> -->
+              </div>
+
+              <div class="room-metric room-metric--hum">
+                <div class="room-metric__label">습도</div>
+                <div class="room-metric__value" id="current-hum">68%</div>
+                <!-- <div class="room-metric__delta">평균 대비 +7%</div> -->
+              </div>
+
+              <div class="room-metric room-metric--light">
+                <div class="room-metric__label">조도</div>
+                <div class="room-metric__value" id="current-light">520</div>
+                <!-- <div class="room-metric__delta">평균 대비 +100 lux</div> -->
+              </div> 
+              
+              <div class="room-metric room-metric--water">
+                <div class="room-metric__label">다음 물주기</div>
+                <div class="room-metric__value" style="color:#0284c7;" id="water-dday">D-2</div>
+                <!-- <div class="room-metric__delta">1월 15일 예정</div> -->
+              </div>
+            </div>
+          </div>
+
+          <div class="dash__section-title" style="margin-top:18px;">
+            <div>평균 환경 데이터 <span class="muted">(최근 7일)</span></div>
+          </div>
+          <div class="metric-grid">
+            <div class="metric metric--temp">
+              <div class="metric__top">
+                <div class="metric__icon" aria-hidden="true">🌡️</div>
+                <div class="metric__label">평균 온도</div>
+              </div>
+              <div class="metric__value" id="avg-temp-val">--°C</div> 
+              <div class="meter"><span id="avg-temp-bar" style="width:0%"></span></div>
+            </div>
+            <div class="metric metric--hum">
+              <div class="metric__top">
+                <div class="metric__icon" aria-hidden="true">💧</div>
+                <div class="metric__label">평균 습도</div>
+              </div>
+              <div class="metric__value" id="avg-humi-val">--%</div>
+              <div class="meter"><span id="avg-humi-bar" style="width:0%"></span></div>
+            </div>
+            <div class="metric metric--light">
+              <div class="metric__top">
+                <div class="metric__icon" aria-hidden="true">☀️</div>
+                <div class="metric__label">평균 조도</div>
+              </div>
+              <div class="metric__value" id="avg-light-val">--lux</div>
+              <div class="meter"><span id="avg-light-bar" style="width:0%"></span></div>
+            </div>
+            <!-- <div class="metric metric--soil">
+              <div class="metric__top">
+                <div class="metric__icon" aria-hidden="true">🌱</div>
+                <div class="metric__label">평균 토양 수분</div>
+              </div>
+              <div class="metric__value">45%</div>
+              <div class="meter"><span style="width:45%"></span></div>
+            </div> -->
+          </div>
+        </div>
+      </div>             
+    </div>
+  </section>
+
+  <section id="page-growth" class="page hidden">
+    <div class="layout container">
+      <aside class="side">
+        <h3 class="side__title">성장기록</h3>
+        <nav class="side-menu">
+          <button class="side-menu__item is-active" type="button" data-growth-tab="timelapse">타임랩스</button>
+          <button class="side-menu__item" type="button" data-growth-tab="history">성장 히스토리</button>
+          <button class="side-menu__item" type="button" data-growth-tab="timeline">타임라인</button>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <section class="growth-panel active" id="growth-timelapse">
+          <h2>타임랩스 갤러리</h2>
+          <p class="sub">식물의 성장 과정을 영상으로 확인하세요</p>
+          <div class="timelapse-card timelapse-card--v2">
+            <div id="timelapse-screen" class="timelapse-thumb timelapse-thumb--icon">
+              <div class="timelapse-screen">
+              <span class="timelapse-icon" aria-hidden="true">🌿</span>
+              </div>
+              <!-- <button class="thumb-play" type="button" aria-label="재생">▶</button> -->
+            </div>
+            <div class="timelapse-info">
+              <strong class="timelapse-title">산세테리아</strong>
+              <div class="timelapse-date">
+                <input type="date" class="timelapse-input" value="2025-12-01" aria-label="시작일">
+                <span>~</span>
+                <input type="date" class="timelapse-input" value="2026-01-01" aria-label="종료일">
+              </div>
+              <div class="timelapse-meta">
+                <div class="meta-row">
+                  <span class="meta-label">기간</span>
+                  <span class="meta-value">30일</span>
+                </div>
+              </div>
+              <div class="timelapse-actions">
+                <button class="btn btn--solid" style="width: 100%;">▶ 재생</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="growth-panel" id="growth-history">
+          <h2>성장 히스토리</h2>
+          <p class="sub">식물의 성장 변화를 데이터로 확인하세요</p>
+          <div class="gh-kpi">
+            <div class="gh-kpi__icon" aria-hidden="true">📈</div>
+            <div class="gh-kpi__body">
+              <div class="gh-kpi__label">성장률</div>
+              <div class="gh-kpi__value">+12%</div>
+              <div class="gh-kpi__sub">지난 달 대비</div>
+            </div>
+          </div>
+          <div class="gh-card">
+            <div class="gh-card__head">
+              <div class="gh-card__title"><span aria-hidden="true">📊</span>변화 그래프</div>
+              <div class="gh-card__delta">+3cm</div>
+            </div>
+            <div class="gh-card__subtitle">키 성장</div>
+            <div class="gh-chart">
+              <div class="gh-chart__area">
+                <canvas id="growthChart"></canvas>
+              </div>
+              <div class="gh-chart__x" id="chartXAxis"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="growth-panel" id="growth-timeline">
+          <h2>🌱 성장 다이어리</h2>
+          <p class="sub">매일의 식물 변화와 감정을 기록하세요</p>
+          <div class="today-card today-card--v2">
+            <div class="today-card__left">
+              <h3 class="today-card__title">오늘의 감정 메시지</h3>
+              <p class="today-card__quote">“산세테리아가 새로운 잎을 피웠어요! 🌱”</p>
+              <p class="today-card__desc">당신의 정성스러운 관리 덕분에 건강하게 자라고 있습니다.</p>
+              <div class="actions">
+                <button type="button" class="btn btn--solid" data-open-modal="diary">기록하기</button>
+                <p class="sub-text" style="font-size: 0.8rem; margin-top: 5px; color: #666;">사진과 메모를 한 번에 남겨보세요!</p>
+              </div>
+            </div>
+            <div class="today-card__mood" aria-hidden="true">😊</div>
+          </div>
+          <div class="timeline timeline--cards" id="timeline-list">
+            <article class="tcard tcard--green">
+              <div class="tcard__bar"></div>
+              <div class="tcard__row">
+                <div class="tcard__icon" aria-hidden="true">😊</div>
+                <div class="tcard__main">
+                  <div class="tcard__meta">
+                    <span class="tcard__date">2026-01-13</span>
+                    <span class="tcard__tag">오늘</span>
+                  </div>
+                  <div class="tcard__text"><strong>새로운 잎이 나왔어요!</strong> 건강하게 자라고 있네요.</div>
+                </div>
+              </div>
+            </article>
+            <article class="tcard tcard--blue">
+              <div class="tcard__bar"></div>
+              <div class="tcard__row">
+                <div class="tcard__icon" aria-hidden="true">🌿</div>
+                <div class="tcard__main">
+                  <div class="tcard__meta">
+                    <span class="tcard__date">2026-01-12</span>
+                    <span class="tcard__tag">어제</span>
+                  </div>
+                  <div class="tcard__text">물을 충분히 줬더니 잎이 생기가 돌아왔어요.</div>
+                </div>
+              </div>
+            </article>
+            <article class="tcard tcard--purple">
+              <div class="tcard__bar"></div>
+              <div class="tcard__row">
+                <div class="tcard__icon" aria-hidden="true">💚</div>
+                <div class="tcard__main">
+                  <div class="tcard__meta">
+                    <span class="tcard__date">2026-01-11</span>
+                    <span class="tcard__tag">2일 전</span>
+                  </div>
+                  <div class="tcard__text">조금 시들어 보여서 걱정했는데 회복중입니다.</div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </section>
+
+        <!-- <section class="growth-panel" id="growth-timeline">
+          <h2>🌱 성장 다이어리</h2>
+          <p class="sub">매일의 식물 변화와 감정을 기록하세요</p>
+          <div class="today-card today-card--v2">
+            <div class="today-card__left">
+              <h3 class="today-card__title">오늘의 감정 메시지</h3>
+              <p class="today-card__quote">“몬스테라가 새로운 잎을 피웠어요! 🌱”</p>
+              <p class="today-card__desc">당신의 정성스러운 관리 덕분에 건강하게 자라고 있습니다.</p>
+              <div class="actions">
+                <button type="button" class="btn btn--solid" data-open-modal="photo">사진 추가</button>
+                <button type="button" class="btn btn--outline" data-open-modal="memo">메모 작성</button>
+              </div>
+            </div>
+            <div class="today-card__mood" aria-hidden="true">😊</div>
+          </div>
+          <div class="timeline timeline--cards">
+            <article class="tcard tcard--green">
+              <div class="tcard__bar"></div>
+              <div class="tcard__row">
+                <div class="tcard__icon" aria-hidden="true">😊</div>
+                <div class="tcard__main">
+                  <div class="tcard__meta">
+                    <span class="tcard__date">2026-01-13</span>
+                    <span class="tcard__tag">오늘</span>
+                  </div>
+                  <div class="tcard__text"><strong>새로운 잎이 나왔어요!</strong> 건강하게 자라고 있네요.</div>
+                </div>
+              </div>
+            </article>
+            <article class="tcard tcard--blue">
+              <div class="tcard__bar"></div>
+              <div class="tcard__row">
+                <div class="tcard__icon" aria-hidden="true">🌿</div>
+                <div class="tcard__main">
+                  <div class="tcard__meta">
+                    <span class="tcard__date">2026-01-12</span>
+                    <span class="tcard__tag">어제</span>
+                  </div>
+                  <div class="tcard__text">물을 충분히 줬더니 잎이 생기가 돌아왔어요.</div>
+                </div>
+              </div>
+            </article>
+            <article class="tcard tcard--purple">
+              <div class="tcard__bar"></div>
+              <div class="tcard__row">
+                <div class="tcard__icon" aria-hidden="true">💚</div>
+                <div class="tcard__main">
+                  <div class="tcard__meta">
+                    <span class="tcard__date">2026-01-11</span>
+                    <span class="tcard__tag">2일 전</span>
+                  </div>
+                  <div class="tcard__text">조금 시들어 보여서 걱정했는데 회복중입니다.</div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </section> -->
+
+
+
+
+  <section id="page-report" class="page hidden">
+    <div class="report-layout container">
+      <aside class="report-side" aria-label="분석리포트 메뉴">
+        <h3 class="report-side__title">분석리포트</h3>
+        <nav class="side-menu">
+          <button class="side-menu__item is-active" type="button" data-report-tab="skill">식집사 숙련도 점수</button>
+          <button class="side-menu__item" type="button" data-report-tab="stats">데이터 통계</button>
+          <button class="side-menu__item" type="button" data-report-tab="habit">관리 습관</button>
+        </nav>
+      </aside>
+
+      <main class="report-main">
+        <section class="report-panel is-active" id="report-skill">
+          <header class="report-head">
+            <h2 class="report-head__title">식집사 숙련도 점수</h2>
+            <p class="report-head__sub">당신의 식물 관리 실력을 확인하세요</p>
+          </header>
+          <section class="skill-banner" aria-label="숙련도 배너">
+            <div class="skill-banner__content">
+              <div class="skill-badge">현재 숙련도</div>
+              <div class="skill-score"><span class="skill-score__num">72</span><span class="skill-score__unit">점</span></div>
+              <div class="skill-rank"><span class="skill-rank__icon">🏅</span><span class="skill-rank__text">숙련된 식집사</span></div>
+              <div class="skill-bar" role="progressbar" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100">
+                <div class="skill-bar__fill" style="width:72%"></div>
+              </div>
+              <p class="skill-next">다음 레벨까지 <b>14점</b> 남았습니다!</p>
+            </div>
+            <div class="skill-banner__trophy" aria-hidden="true">
+              <div class="trophy-circle"><span class="trophy-emoji">🏆</span></div>
+            </div>
+          </section>
+
+          <section class="report-card" aria-label="레벨 시스템">
+            <div class="report-card__head"><h3 class="report-card__title">레벨 시스템</h3></div>
+            <div class="level-list">
+              <div class="level-item">
+                <div class="level-dot level-dot--gray"></div>
+                <div class="level-info"><div class="level-name">초보 식집사</div><div class="level-range">0 - 30점</div></div>
+              </div>
+              <div class="level-item">
+                <div class="level-dot level-dot--blue"></div>
+                <div class="level-info"><div class="level-name">성장하는 식집사</div><div class="level-range">31 - 60점</div></div>
+              </div>
+              <div class="level-item is-current">
+                <div class="level-dot level-dot--purple"></div>
+                <div class="level-info"><div class="level-name">숙련된 식집사</div><div class="level-range">61 - 85점</div></div>
+                <div class="level-badge">현재 레벨</div>
+              </div>
+              <div class="level-item">
+                <div class="level-dot level-dot--gold"></div>
+                <div class="level-info"><div class="level-name">마스터 식집사</div><div class="level-range">86 - 100점</div></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="report-card" aria-label="세부 점수">
+            <div class="report-card__head"><h3 class="report-card__title">세부 점수</h3></div>
+            <div class="score-list">
+              <div class="score-row">
+                <div class="score-label">물주기 관리</div>
+                <div class="score-bar"><div class="score-fill score-fill--blue" style="width:85%"></div></div>
+                <div class="score-num">85 / 100</div>
+              </div>
+              <div class="score-row">
+                <div class="score-label">환경 관리</div>
+                <div class="score-bar"><div class="score-fill score-fill--gold" style="width:65%"></div></div>
+                <div class="score-num">65 / 100</div>
+              </div>
+              <div class="score-row">
+                <div class="score-label">기록 성실도</div>
+                <div class="score-bar"><div class="score-fill score-fill--purple" style="width:60%"></div></div>
+                <div class="score-num">60 / 100</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="report-card" aria-label="업적">
+            <div class="report-card__head"><h3 class="report-card__title">업적</h3></div>
+            <div class="ach-grid">
+              <div class="ach-card is-done"><div class="ach-icon">🔥</div><div class="ach-name">7일 연속 관리</div><div class="ach-sub">달성!</div></div>
+              <div class="ach-card is-done"><div class="ach-icon">🌱</div><div class="ach-name">첫 식물 키우기</div><div class="ach-sub">달성!</div></div>
+              <div class="ach-card is-locked"><div class="ach-icon">⭐</div><div class="ach-name">완벽한 한 달</div><div class="ach-sub">잠금</div></div>
+              <div class="ach-card is-locked"><div class="ach-icon">🌿</div><div class="ach-name">식물 5개 관리</div><div class="ach-sub">잠금</div></div>
+            </div>
+          </section>
+        </section>
+
+
+        <section class="report-panel hidden" id="report-stats">
+          <header class="report-head">
+            <h2 class="report-head__title">데이터 통계</h2>
+            <p class="report-head__sub">환경 데이터와 관리 기록을 분석합니다</p>
+          </header>
+          <div class="stat-grid">
+            
+            <article class="stat-card stat-card--temp">
+              <div class="stat-head">
+                <div class="stat-icon">🌡️</div>
+                <div>
+                  <div class="stat-title">온도 추이</div>
+                  <div class="stat-sub">시간대별 온도 변화</div>
+                </div>
+              </div>
+              <div class="stat-chart">
+                <canvas id="tempChart"></canvas> 
+              </div>
+              <div class="stat-summary stat-summary--temp">
+                <div>
+                  <div class="sum-label">평균 온도</div>
+                  <div class="sum-value" id="avg-temp">--°C</div>
+                </div>
+                <div class="sum-right">
+                  <div class="sum-label">최적 범위</div>
+                  <div class="sum-range">20-26°C</div>
+                </div>
+              </div>
+            </article>
+
+            <article class="stat-card stat-card--hum">
+              <div class="stat-head">
+                <div class="stat-icon">💧</div>
+                <div>
+                  <div class="stat-title">습도 추이</div>
+                  <div class="stat-sub">시간대별 습도 변화</div>
+                </div>
+              </div>
+              <div class="stat-chart">
+                <canvas id="humChart"></canvas>
+              </div>
+              <div class="stat-summary stat-summary--hum">
+                <div>
+                  <div class="sum-label">평균 습도</div>
+                  <div class="sum-value" id="avg-hum">--%</div>
+                </div>
+                <div class="sum-right">
+                  <div class="sum-label">최적 범위</div>
+                  <div class="sum-range">50-70%</div>
+                </div>
+              </div>
+            </article>
+
+            <article class="stat-card stat-card--water">
+              <div class="stat-head">
+                <div class="stat-icon">💦</div>
+                <div>
+                  <div class="stat-title">관수 주기 추이</div>
+                  <div class="stat-sub">주별 물주기 횟수</div>
+                </div>
+              </div>
+              <div class="stat-chart">
+                <canvas id="waterWeeklyChart"></canvas>
+              </div>
+              <div class="water-sums">
+                <div class="water-box">
+                  <div class="sum-label">평균 주기</div>
+                  <div class="sum-value" id="water-avg-interval">--일</div>
+                </div>
+                <div class="water-box">
+                  <div class="sum-label">이번 달</div>
+                  <div class="sum-value" id="water-total-month">--회</div>
+                </div>
+              </div>
+            </article>
+
+            <article class="stat-card stat-card--light">
+              <div class="stat-head">
+                <div class="stat-icon">☀️</div>
+                <div>
+                  <div class="stat-title">조도 추이</div>
+                  <div class="stat-sub">시간대별 빛의 양</div>
+                </div>
+              </div>
+              <div class="stat-chart">
+                <canvas id="lightChart"></canvas>
+              </div>
+              <div class="stat-summary stat-summary--light">
+                <div>
+                  <div class="sum-label">평균 조도</div>
+                  <div class="sum-value" id="avg-light">-- lux</div>
+                </div>
+                <div class="sum-right">
+                  <div class="sum-label">최적 범위</div>
+                  <div class="sum-range">200-500 lux</div>
+                </div>
+              </div>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- <section class="report-panel hidden" id="report-stats">
+          <header class="report-head">
+            <h2 class="report-head__title">데이터 통계</h2>
+            <p class="report-head__sub">환경 데이터와 관리 기록을 분석합니다</p>
+          </header>
+          <div class="stat-grid">
+            <article class="stat-card stat-card--temp">
+              <div class="stat-head">
+                <div class="stat-icon">🌡️</div>
+                <div><div class="stat-title">온도 추이</div><div class="stat-sub">시간대별 온도 변화</div></div>
+              </div>
+              <div class="stat-chart"></div>
+              <div class="stat-x"><span>00</span><span>04</span><span>08</span><span>12</span><span>16</span><span>20</span></div>
+              <div class="stat-summary stat-summary--temp">
+                <div><div class="sum-label">평균 온도</div><div class="sum-value">23.5°C</div></div>
+                <div class="sum-right"><div class="sum-label">최적 범위</div><div class="sum-range">20-26°C</div></div>
+              </div>
+            </article>
+            <article class="stat-card stat-card--hum">
+              <div class="stat-head">
+                <div class="stat-icon">💧</div>
+                <div><div class="stat-title">습도 추이</div><div class="stat-sub">시간대별 습도 변화</div></div>
+              </div>
+              <div class="stat-chart"></div>
+              <div class="stat-x"><span>00</span><span>04</span><span>08</span><span>12</span><span>16</span><span>20</span></div>
+              <div class="stat-summary stat-summary--hum">
+                <div><div class="sum-label">평균 습도</div><div class="sum-value">57.5%</div></div>
+                <div class="sum-right"><div class="sum-label">최적 범위</div><div class="sum-range">50-70%</div></div>
+              </div>
+            </article>
+            <article class="stat-card stat-card--water">
+              <div class="stat-head">
+                <div class="stat-icon">💦</div>
+                <div><div class="stat-title">관수 주기 추이</div><div class="stat-sub">주별 물주기 횟수</div></div>
+              </div>
+              <div class="stat-chart"></div>
+              <div class="stat-x stat-x--weeks">
+                <span><b>15회</b><em>1주차</em></span><span><b>18회</b><em>2주차</em></span><span><b>16회</b><em>3주차</em></span><span><b>20회</b><em>4주차</em></span>
+              </div>
+              <div class="water-sums">
+                <div class="water-box"><div class="sum-label">평균 주기</div><div class="sum-value">4.2일</div></div>
+                <div class="water-box"><div class="sum-label">이번 달</div><div class="sum-value">69회</div></div>
+              </div>
+            </article>
+            <article class="stat-card stat-card--light">
+              <div class="stat-head">
+                <div class="stat-icon">☀️</div>
+                <div><div class="stat-title">조도 추이</div><div class="stat-sub">시간대별 빛의 양</div></div>
+              </div>
+              <div class="stat-chart"></div>
+              <div class="stat-x"><span>00</span><span>04</span><span>08</span><span>12</span><span>16</span><span>20</span></div>
+              <div class="stat-summary stat-summary--light">
+                <div><div class="sum-label">평균 조도</div><div class="sum-value">320 lux</div></div>
+                <div class="sum-right"><div class="sum-label">최적 범위</div><div class="sum-range">200-500 lux</div></div>
+              </div>
+            </article>
+          </div>
+        </section> -->
+
+        <section class="report-panel hidden" id="report-habit">
+          <header class="report-head">
+            <h2 class="report-head__title">관리 습관</h2>
+            <p class="report-head__sub">기록/알림/루틴 기반으로 습관을 점검합니다</p>
+          </header>
+          <section class="habit-kpi-grid">
+            <article class="habit-kpi"><div class="habit-kpi__icon">🕒</div><div class="habit-kpi__meta"><p class="habit-kpi__label">선호하는 관리 시간</p><p class="habit-kpi__value">오전 9-11시</p><p class="habit-kpi__desc">주로 아침 시간대에 식물을 관리하시네요!</p></div></article>
+            <article class="habit-kpi"><div class="habit-kpi__icon is-green">📅</div><div class="habit-kpi__meta"><p class="habit-kpi__label">평균 물주기 간격</p><p class="habit-kpi__value">3.5일</p><p class="habit-kpi__desc">꾸준한 물주기 패턴을 유지하고 있습니다.</p></div></article>
+            <article class="habit-kpi"><div class="habit-kpi__icon is-purple">📈</div><div class="habit-kpi__meta"><p class="habit-kpi__label">주간 관리 빈도</p><p class="habit-kpi__value">14회</p><p class="habit-kpi__desc">매우 성실하게 식물을 관리하고 있습니다!</p></div></article>
+            <article class="habit-kpi"><div class="habit-kpi__icon is-amber">⏰</div><div class="habit-kpi__meta"><p class="habit-kpi__label">놓친 관리</p><p class="habit-kpi__value">2회</p><p class="habit-kpi__desc">지난 주 목요일과 금요일에 관리를 놓쳤어요.</p></div></article>
+          </section>
+          <section class="report-card habit-activity" aria-label="주간 관리 활동">
+            <div class="report-card__head"><h3 class="report-card__title">주간 관리 활동</h3></div>
+            <div class="habit-week">
+              <div class="habit-day"><div class="habit-bar"><span class="seg is-log" style="height:34%"></span><span class="seg is-mist" style="height:20%"></span><span class="seg is-water" style="height:30%"></span></div><span class="habit-day__label">월</span></div>
+              <div class="habit-day"><div class="habit-bar"><span class="seg is-log" style="height:22%"></span><span class="seg is-water" style="height:18%"></span></div><span class="habit-day__label">화</span></div>
+              <div class="habit-day"><div class="habit-bar"><span class="seg is-log" style="height:40%"></span><span class="seg is-mist" style="height:25%"></span><span class="seg is-water" style="height:36%"></span></div><span class="habit-day__label">수</span></div>
+              <div class="habit-day"><div class="habit-bar"><span class="seg is-log" style="height:20%"></span><span class="seg is-mist" style="height:15%"></span><span class="seg is-water" style="height:26%"></span></div><span class="habit-day__label">목</span></div>
+              <div class="habit-day"><div class="habit-bar"><span class="seg is-log" style="height:34%"></span><span class="seg is-water" style="height:12%"></span></div><span class="habit-day__label">금</span></div>
+              <div class="habit-day"><div class="habit-bar"><span class="seg is-log" style="height:18%"></span><span class="seg is-mist" style="height:30%"></span><span class="seg is-water" style="height:26%"></span></div><span class="habit-day__label">토</span></div>
+              <div class="habit-day"><div class="habit-bar"><span class="seg is-log" style="height:44%"></span><span class="seg is-mist" style="height:20%"></span><span class="seg is-water" style="height:30%"></span></div><span class="habit-day__label">일</span></div>
+            </div>
+            <div class="habit-legend" aria-label="범례"><span class="legend-item"><i class="dot is-log"></i> 기록</span><span class="legend-item"><i class="dot is-mist"></i> 분무</span><span class="legend-item"><i class="dot is-water"></i> 물주기</span></div>
+          </section>
+          <section class="report-card habit-insights" aria-label="습관 분석 및 제안">
+            <div class="report-card__head"><h3 class="report-card__title">습관 분석 및 제안</h3></div>
+            <div class="insight-list">
+              <article class="insight is-green"><h4 class="insight__title">🌞 아침형 식집사</h4><p class="insight__desc">주로 아침에 식물을 관리하시네요. 아침 햇살을 받으며 물을 주면 증산작용이 활발해져 좋습니다!</p></article>
+              <article class="insight is-blue"><h4 class="insight__title">🧊 일정한 패턴</h4><p class="insight__desc">물주기 간격이 일정해요. 하지만 주말에 조금 더 집중적으로 관리하는 경향이 있어요.</p></article>
+              <article class="insight is-amber"><h4 class="insight__title">💡 개선 제안</h4><p class="insight__desc">목요일과 금요일의 관리가 상대적으로 부족해요. 알림을 설정해보는 건 어떨까요?</p></article>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+  </section>
+
+  <section id="page-settings" class="page hidden">
+    <div class="settings-layout container">
+      <aside class="settings-side" aria-label="환경설정 메뉴">
+        <h3 class="settings-side__title">환경설정</h3>
+        <nav class="side-menu">
+          <button class="side-menu__item is-active" type="button" data-settings-tab="info">나의 정보</button>
+          <button class="side-menu__item" type="button" data-settings-tab="profile">나의 반려식물</button>
+        </nav>
+      </aside>
+
+      <main class="settings-main">
+        <section class="settings-panel report-panel is-active" id="settings-info">
+          <header class="report-head">
+            <h2 class="report-head__title">나의 정보</h2>
+            <p class="report-head__sub">계정 정보 및 프로필 관리</p>
+          </header>
+          <section class="profile-hero" aria-label="프로필 요약 배너">
+            <div class="profile-hero__left">
+              <div class="profile-hero__avatar" aria-hidden="true">🌿</div>
+              <div class="profile-hero__meta">
+                <div class="profile-hero__name">식집사님</div>
+                <div class="profile-hero__sub" id="profile-date">가입일: 2025-06-15</div>
+                <!-- <div class="profile-hero__sub">관리 중인 식물: 1개</div> -->
+              </div>
+            </div>
+          </section>
+          <section class="report-card" aria-label="기본 정보">
+            <div class="report-card__head"><h3 class="report-card__title">기본 정보</h3></div>
+            <div class="info-list">
+              <div class="info-row">
+                <div class="info-left">
+                  <div class="info-icon is-blue" aria-hidden="true">👤</div>
+                  <div class="info-text">
+                    <div class="info-label">이름</div>
+                    <div class="info-value" id="profile-name">식집사</div>
+                  </div>
+                </div>
+                <!-- <button class="info-btn" type="button" data-open-modal="edit-name">수정</button> -->
+              </div>
+              <div class="info-row">
+                <div class="info-left">
+                  <div class="info-icon is-green" aria-hidden="true">✉️</div>
+                  <div class="info-text">
+                    <div class="info-label">이메일</div>
+                    <div class="info-value" id="profile-email">plantlover@greensync.com</div>
+                  </div>
+                </div>
+                <!-- <button class="info-btn" type="button" data-open-modal="edit-email">변경</button> -->
+              </div>
+              <!-- <div class="info-row">
+                <div class="info-left">
+                  <div class="info-icon is-purple" aria-hidden="true">📞</div>
+                  <div class="info-text"><div class="info-label">전화번호</div><div class="info-value">010-1234-5678</div></div>
+                </div>
+                <button class="info-btn" type="button" data-open-modal="edit-phone">수정</button>
+              </div>
+              <div class="info-row">
+                <div class="info-left">
+                  <div class="info-icon is-amber" aria-hidden="true">📍</div>
+                  <div class="info-text"><div class="info-label">주소</div><div class="info-value">서울특별시 강남구</div></div>
+                </div>
+                <button class="info-btn" type="button" data-open-modal="edit-address">수정</button>
+              </div> -->
+            </div>
+          </section>
+          <section class="report-card" aria-label="계정 설정">
+            <div class="report-card__head"><h3 class="report-card__title">계정 설정</h3></div>
+            <div class="setting-list">
+              <button class="setting-item" type="button" data-open-modal="password">
+                <div class="setting-title">비밀번호 변경</div>
+                <div class="setting-sub">계정 보안을 위해 주기적으로 변경하세요</div>
+              </button>
+            </div>
+          </section>
+          <section class="report-card account-danger" aria-label="계정 관리">
+            <div class="report-card__head"><h3 class="report-card__title">계정 관리</h3></div>
+            <div class="danger-box">
+              <button class="danger-btn is-ghost" type="button" id="btn-logout">로그아웃</button>
+              <button class="danger-btn" type="button" id="btn-delete">회원 탈퇴</button>
+            </div>
+          </section>
+        </section>
+
+        <section class="settings-panel report-panel hidden" id="settings-profile">
+          <header class="report-head">
+            <h2 class="report-head__title">나의 반려식물</h2>
+            <p class="report-head__sub">식물과 함께 성장하는 과정을 기록합니다</p>
+          </header>
+          <div id="plant-empty-state">
+            <div style="text-align:center; padding: 60px 0; border: 2px dashed #cbd5e1; border-radius: 18px; margin-top:20px;">
+              <div style="font-size:48px; margin-bottom:16px;">🌿</div>
+              <h3 style="font-size:20px; font-weight:800; color:#334155; margin:0 0 8px;">반려식물이 없습니다</h3>
+              <p style="color:#64748b; margin-bottom:24px;">첫 번째 반려식물을 등록하고 관리를 시작해보세요!</p>
+              <button class="btn btn--solid btn--lg" type="button" data-open-modal="plant-register">+ 새 반려식물 등록하기</button>
+            </div>
+          </div>
+          <div id="plant-exist-state" class="hidden">
+            <section class="tree-hero">
+              <div class="tree-hero__inner">
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:-20px;">
+                  <button class="btn btn--outline" style="padding:6px 12px; font-size:13px; background:white;" data-open-modal="plant-register">수정</button>
+                  <button class="btn btn--outline" style="padding:6px 12px; font-size:13px; background:white; color:#ef4444; border-color:#ef4444;" id="btn-plant-delete">삭제</button>
+                </div>
+                <div class="tree-hero__badgeWrap" aria-hidden="true">
+                  <div class="tree-hero__badgeCircle">🌳</div>
+                  <div class="tree-hero__level">Lv.5</div>
+                </div>
+                <div class="tree-hero__title" id="tree-name">산세베리아</div>
+                <!-- <div class="tree-hero__desc">156일 동안 함께 성장했습니다 🌱</div> -->
+                <div class="tree-progress">
+                  <div class="tree-progress__top" id="tree-period"><span class="tree-progress__label">다음 단계</span><span class="tree-progress__value"><b>156</b> / 200일</span></div>
+                  <!-- <div class="tree-progress__bar"><span class="tree-progress__fill" style="width:78%;"></span></div>
+                  <div class="tree-progress__sub">큰 나무까지 44일 남았습니다</div> -->
+                </div>
+              </div>
+            </section>
+            <!-- <section class="tree-kpi" aria-label="프로필 트리 요약">
+              <div class="tree-kpi__grid">
+                <article class="tree-kpi__card"><div class="tree-kpi__icon is-blue">📅</div><div class="tree-kpi__label">관리한 일수</div><div class="tree-kpi__value">156일</div></article>
+                <article class="tree-kpi__card"><div class="tree-kpi__icon is-green">🌿</div><div class="tree-kpi__label">관리 중인 식물</div><div class="tree-kpi__value">1개</div></article>
+                <article class="tree-kpi__card"><div class="tree-kpi__icon is-purple">📈</div><div class="tree-kpi__label">총 관리 기록</div><div class="tree-kpi__value">423회</div></article>
+                <article class="tree-kpi__card"><div class="tree-kpi__icon is-amber">🏅</div><div class="tree-kpi__label">현재 레벨</div><div class="tree-kpi__value">Lv.5</div></article>
+              </div>
+            </section> -->
+            <!-- <section class="tree-steps report-card" aria-label="성장 과정">
+              <div class="report-card__head"><h3 class="report-card__title">성장 과정</h3></div>
+              <div class="tree-stepList">
+                <div class="tree-step is-done">
+                  <div class="tree-step__left"><div class="tree-step__icon">🌱</div><div class="tree-step__txt"><div class="tree-step__name">새싹 <span class="tree-step__lv">Lv.1</span></div><div class="tree-step__sub">7일 달성 필요</div></div></div>
+                  <button class="tree-step__btn" type="button">달성!</button>
+                </div>
+                <div class="tree-step is-done">
+                  <div class="tree-step__left"><div class="tree-step__icon">🍀</div><div class="tree-step__txt"><div class="tree-step__name">떡잎 <span class="tree-step__lv">Lv.2</span></div><div class="tree-step__sub">30일 달성 필요</div></div></div>
+                  <button class="tree-step__btn" type="button">달성!</button>
+                </div>
+                <div class="tree-step is-done">
+                  <div class="tree-step__left"><div class="tree-step__icon">🌿</div><div class="tree-step__txt"><div class="tree-step__name">성장 <span class="tree-step__lv">Lv.3</span></div><div class="tree-step__sub">60일 달성 필요</div></div></div>
+                  <button class="tree-step__btn" type="button">달성!</button>
+                </div>
+                <div class="tree-step is-done">
+                  <div class="tree-step__left"><div class="tree-step__icon">🌸</div><div class="tree-step__txt"><div class="tree-step__name">꽃피움 <span class="tree-step__lv">Lv.4</span></div><div class="tree-step__sub">100일 달성 필요</div></div></div>
+                  <button class="tree-step__btn" type="button">달성!</button>
+                </div>
+                <div class="tree-step is-done is-current">
+                  <div class="tree-step__left"><div class="tree-step__icon">🌳</div><div class="tree-step__txt"><div class="tree-step__name">나무 <span class="tree-step__lv">Lv.5</span></div><div class="tree-step__sub">150일 달성 필요</div></div></div>
+                  <button class="tree-step__btn" type="button">달성!</button>
+                </div>
+                <div class="tree-step is-lock">
+                  <div class="tree-step__left"><div class="tree-step__icon">🎄</div><div class="tree-step__txt"><div class="tree-step__name">큰 나무 <span class="tree-step__lv">Lv.6</span></div><div class="tree-step__sub">200일 달성 필요</div></div></div>
+                  <button class="tree-step__btn is-lock" type="button" disabled>잠김</button>
+                </div>
+              </div>
+            </section> -->
+          </div>
+        </section>
+      </main>
+    </div>
+  </section>
+
+  <div class="modal hidden" id="modal-login" role="dialog" aria-modal="true" aria-labelledby="modal-login-title">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel" role="document">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-login-title">로그인</h2>
+        <button class="modal__close" type="button" aria-label="닫기" data-close-modal>✕</button>
+      </div>
+      <form class="modal__body" id="login-form">
+        <div class="form-alert hidden" id="login-alert" role="alert"></div>
+        <label class="field">
+          <span class="field__label">이메일</span>
+          <input id="login-email" class="field__input" type="email" placeholder="example@email.com" required />
+        </label>
+        <label class="field">
+          <span class="field__label">비밀번호</span>
+          <input id="login-pass" class="field__input" type="password" placeholder="••••••••" required />
+        </label>
+        <button class="btn btn--solid btn--lg" type="submit" style="width:100%;">로그인</button>
+        <button class="link-btn" type="button" style="width:100%; margin-top:10px;" data-close-modal>취소</button>
+        <button class="link-btn" type="button" style="width:100%; margin-top:10px;" data-open-modal="forgot">비밀번호 찾기</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-about" role="dialog" aria-modal="true" aria-labelledby="modal-about-title">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel" role="document">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-about-title">GreenSync 소개</h2>
+        <button class="modal__close" type="button" aria-label="닫기" data-close-modal>✕</button>
+      </div>
+      <div class="modal__body">
+        <p style="margin-top:0;">GreenSync는 반려식물의 상태를 데이터로 분석해<br />더 건강한 식물 관리를 돕는 서비스입니다.</p>
+        <ul style="padding-left:18px; line-height:1.7;">
+          <li>🌱 실시간 식물 상태 모니터링</li>
+          <li>📊 환경 데이터 분석</li>
+          <li>🔔 맞춤형 관리 알림</li>
+        </ul>
+        <button class="btn btn--solid btn--lg" type="button" style="width:100%; margin-top:16px;" data-close-modal>확인</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-signup" role="dialog" aria-modal="true" aria-labelledby="modal-signup-title">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel" role="document">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-signup-title">회원가입</h2>
+        <button class="modal__close" type="button" aria-label="닫기" data-close-modal>✕</button>
+      </div>
+      <form class="modal__body" id="signup-form">
+        <label class="field"><span class="field__label">이름</span><input id="signup-name" class="field__input" type="text" placeholder="홍길동" required /></label>
+        <label class="field"><span class="field__label">이메일</span><input id="signup-email" class="field__input" type="email" placeholder="example@email.com" required /></label>
+        <label class="field"><span class="field__label">비밀번호</span><input id="signup-pass" class="field__input" type="password" placeholder="••••••••" required /></label>
+        <label class="field"><span class="field__label">비밀번호 확인</span><input id="signup-pass-confirm" class="field__input" type="password" placeholder="••••••••" required /></label>
+        <button class="btn btn--solid btn--lg" type="submit" style="width:100%;">회원가입</button>
+        <button class="link-btn" type="button" style="width:100%; margin-top:10px;" data-close-modal>취소</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-forgot" role="dialog" aria-modal="true" aria-labelledby="modal-forgot-title">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel" role="document">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-forgot-title">비밀번호 찾기</h2>
+        <button class="modal__close" type="button" aria-label="닫기" data-close-modal>✕</button>
+      </div>
+      <form class="modal__body" id="forgot-form">
+        <div class="form-alert hidden" id="forgot-alert" role="alert"></div>
+        <label class="field"><span class="field__label">이메일</span><input class="field__input" type="email" placeholder="example@email.com" required /></label>
+        <button class="btn btn--solid btn--lg" type="submit" style="width:100%;">인증 메일 보내기</button>
+        <button class="link-btn" type="button" style="width:100%; margin-top:10px;" data-open-modal="login">로그인으로 돌아가기</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-plant-detail" role="dialog" aria-modal="true" aria-labelledby="plant-detail-title">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel modal__panel--lg" role="document">
+      <div class="modal__header">
+        <h2 class="modal__title" id="plant-detail-title">🌿 산세테리아 상세 정보</h2>
+        <button class="modal__close" type="button" aria-label="닫기" data-close-modal>×</button>
+      </div>
+      <div class="modal__body plant-detail">
+        <div class="plant-detail__status">
+          <div class="plant-detail__statusTitle">🙂 현재 상태</div>
+          <div class="plant-detail__statusText">상태가 안정적이에요.</div>
+        </div>
+        <div class="plant-detail__sectionTitle">식물 관리 정보</div>
+        <div class="plant-detail__grid">
+          <div class="pd-card pd-card--blue"><div class="pd-card__icon">💧</div><div class="pd-card__title">물주기</div><div class="pd-card__sub" id="detail-watering">2일 후</div></div>
+          <div class="pd-card pd-card--yellow"><div class="pd-card__icon">☀️</div><div class="pd-card__title">햇빛</div><div class="pd-card__sub" id="detail-light">충분</div></div>
+          <div class="pd-card pd-card--blue"><div class="pd-card__icon">🌡️</div><div class="pd-card__title">온도</div><div class="pd-card__sub" id="detail-temp">24.5°C (현재)</div></div>
+          <div class="pd-card pd-card--green"><div class="pd-card__icon">💧</div><div class="pd-card__title">습도</div><div class="pd-card__sub" id="detail-humi">68% (현재)</div></div>
+          <!-- <div class="pd-card pd-card--purple"><div class="pd-card__icon">🌱</div><div class="pd-card__title">성장 상태</div><div class="pd-card__sub">좋음</div></div> -->
+        </div>
+      </div>
+      <div class="modal__footer"><button class="btn btn--solid btn--full" type="button" data-close-modal>확인</button></div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-diary" role="dialog" aria-modal="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel" role="document">
+      <div class="modal__header">
+        <h2 class="modal__title">🌿 오늘의 기록</h2>
+        <button class="modal__close" type="button" data-close-modal>✕</button>
+      </div>
+      <form class="modal__body" id="diary-form">
+        <div class="upload">
+          <div class="upload__box">
+            <div class="upload__icon">⬆</div>
+            <div class="upload__text">
+              <strong id="file-name-display">클릭하여 사진 업로드</strong>
+            </div>
+            <input id="diary-file" type="file" accept="image/*" class="upload__input" />
+          </div>
+        </div>
+
+        <div class="field" style="margin-top: 16px;">
+          <div class="field__label">오늘의 기분</div>
+          <div class="mood">
+            <button type="button" class="mood__btn is-active" data-mood="😊">😊</button>
+            <button type="button" class="mood__btn" data-mood="🌿">🌿</button>
+            <button type="button" class="mood__btn" data-mood="💚">💚</button>
+            <button type="button" class="mood__btn" data-mood="💧">💧</button>
+          </div>
+          <input type="hidden" id="diary-mood" value="😊" />
+        </div>
+
+        <label class="field">
+          <span class="field__label">메모 내용</span>
+          <textarea class="field__input" id="diary-text" style="height:100px;" placeholder="어떤 변화가 있었나요?"></textarea>
+        </label>
+
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button class="btn btn--outline" type="button" style="flex:1;" data-close-modal>취소</button>
+          <button class="btn btn--solid" type="submit" style="flex:1;">저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- <div class="modal hidden" id="modal-photo" role="dialog" aria-modal="true" aria-labelledby="modal-photo-title">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel" role="document">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-photo-title">📷 사진 추가</h2>
+        <button class="modal__close" type="button" aria-label="닫기" data-close-modal>✕</button>
+      </div>
+      <form class="modal__body" id="photo-form">
+        <label class="field"><span class="field__label">날짜 선택</span><input class="field__input" id="photo-date" type="date" /></label>
+        <div class="upload">
+          <div class="upload__box">
+            <div class="upload__icon">⬆</div>
+            <div class="upload__text"><strong>클릭하여 사진 업로드</strong><br/><span class="muted">또는 파일을 여기로 드래그하세요</span></div>
+            <input id="photo-file" type="file" accept="image/*" class="upload__input" />
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button class="btn btn--outline" type="button" style="flex:1;" data-close-modal>취소</button>
+          <button class="btn btn--solid" type="submit" style="flex:1;">저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-memo" role="dialog" aria-modal="true" aria-labelledby="modal-memo-title">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel" role="document">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-memo-title">📝 메모 작성</h2>
+        <button class="modal__close" type="button" aria-label="닫기" data-close-modal>✕</button>
+      </div>
+      <form class="modal__body" id="memo-form">
+        <label class="field"><span class="field__label">날짜 선택</span><input class="field__input" id="memo-date" type="date" /></label>
+        <div class="field">
+          <div class="field__label">오늘의 기분</div>
+          <div class="mood">
+            <button type="button" class="mood__btn is-active" data-mood="smile">😊</button>
+            <button type="button" class="mood__btn" data-mood="leaf">🍃</button>
+            <button type="button" class="mood__btn" data-mood="heart">💚</button>
+            <button type="button" class="mood__btn" data-mood="sprout">🌱</button>
+            <button type="button" class="mood__btn" data-mood="sparkle">✨</button>
+            <button type="button" class="mood__btn" data-mood="drop">💧</button>
+            <button type="button" class="mood__btn" data-mood="sun">🌞</button>
+            <button type="button" class="mood__btn" data-mood="etc">⬜</button>
+          </div>
+          <input type="hidden" id="memo-mood" value="smile" />
+        </div>
+        <label class="field"><span class="field__label">메모 내용</span><textarea class="field__input" id="memo-text" style="height:120px; padding-top:10px;" placeholder="오늘 몬스테라에게 어떤 변화가 있었나요? 자유롭게 기록해보세요."></textarea></label>
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button class="btn btn--outline" type="button" style="flex:1;" data-close-modal>취소</button>
+          <button class="btn btn--solid" type="submit" style="flex:1;">저장</button>
+        </div>
+      </form>
+    </div>
+  </div> -->
+
+  <div class="modal hidden" id="modal-password" role="dialog" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel">
+      <div class="modal__header"><h2 class="modal__title">비밀번호 변경</h2><button class="modal__close" type="button" data-close-modal>✕</button></div>
+      <form class="modal__body" id="password-form">
+        <label class="field"><span class="field__label">현재 비밀번호</span><input class="field__input" type="password" required placeholder="현재 비밀번호 입력" /></label>
+        <label class="field"><span class="field__label">새 비밀번호</span><input class="field__input" id="new-pw" type="password" required placeholder="새 비밀번호 (8자 이상)" /></label>
+        <label class="field"><span class="field__label">새 비밀번호 확인</span><input class="field__input" id="confirm-pw" type="password" required placeholder="새 비밀번호 다시 입력" /></label>
+        <div style="margin-top:16px;"><button class="btn btn--solid btn--full" type="submit">변경하기</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-plant-register" role="dialog" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel">
+      <div class="modal__header"><h2 class="modal__title">반려식물 정보</h2><button class="modal__close" type="button" data-close-modal>✕</button></div>
+      <form class="modal__body" id="plant-form">
+        <label class="field"><span class="field__label">식물 이름 (애칭)</span><input id="plant-name" class="field__input" type="text" placeholder="예: 산세테리아, 초록이"/></label>
+        <label class="field"><span class="field__label">입양일 (키우기 시작한 날)</span><input id="plant-date" class="field__input" type="date" /></label>
+        <label class="field"><span class="field__label">식물 종류</span><input id="plant-species" class="field__input" type="text" placeholder="예: 산세테리아 델리시오사"/></label>
+        <div style="margin-top:16px;"><button class="btn btn--solid btn--full" type="submit">저장하기</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-edit-name" role="dialog" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel">
+      <div class="modal__header"><h2 class="modal__title">이름 수정</h2><button class="modal__close" type="button" data-close-modal>✕</button></div>
+      <form class="modal__body" id="form-edit-name">
+        <label class="field"><span class="field__label">새로운 이름</span><input class="field__input" type="text" placeholder="변경할 이름을 입력하세요" required /></label>
+        <button class="btn btn--solid btn--full" type="submit" style="margin-top:16px;">저장하기</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-edit-email" role="dialog" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel">
+      <div class="modal__header"><h2 class="modal__title">이메일 변경</h2><button class="modal__close" type="button" data-close-modal>✕</button></div>
+      <form class="modal__body" id="form-edit-email">
+        <label class="field"><span class="field__label">새 이메일 주소</span><input class="field__input" type="email" placeholder="new@example.com" required /></label>
+        <button class="btn btn--solid btn--full" type="submit" style="margin-top:16px;">인증 메일 발송</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-edit-phone" role="dialog" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel">
+      <div class="modal__header"><h2 class="modal__title">전화번호 수정</h2><button class="modal__close" type="button" data-close-modal>✕</button></div>
+      <form class="modal__body" id="form-edit-phone">
+        <label class="field"><span class="field__label">새 전화번호</span><input class="field__input" type="tel" placeholder="010-0000-0000" required /></label>
+        <button class="btn btn--solid btn--full" type="submit" style="margin-top:16px;">저장하기</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-edit-address" role="dialog" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel">
+      <div class="modal__header"><h2 class="modal__title">주소 수정</h2><button class="modal__close" type="button" data-close-modal>✕</button></div>
+      <form class="modal__body" id="form-edit-address">
+        <label class="field"><span class="field__label">새 주소</span><input class="field__input" type="text" placeholder="시/구/동 입력" required /></label>
+        <label class="field"><span class="field__label">상세 주소</span><input class="field__input" type="text" placeholder="상세 주소 입력" /></label>
+        <button class="btn btn--solid btn--full" type="submit" style="margin-top:16px;">저장하기</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="./core4_jss.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

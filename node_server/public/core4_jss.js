@@ -1,0 +1,1361 @@
+/**
+ * ====================================================================
+ * 🟢 GreenSync Frontend Logic (최종 완성본)
+ * ====================================================================
+ * [수정 내역]
+ * - 로그인 상태에서 '시작하기' 버튼 클릭 시, 모달 대신 대시보드로 바로 이동하도록 수정
+ * ====================================================================
+ */
+
+// 로그인 상태 관리
+let isLoggedIn = false;
+// 차트 바구니 
+let chartInstances = {};
+// 데이터 통계 리로드용
+let lastLoadTime = 0;
+
+/* ====================================================================
+   1. UI Helpers (화면 동작 관련 - 프론트엔드 영역)
+   ==================================================================== */
+
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  const firstInput = modal.querySelector('input, button, textarea, select, a[href]');
+  if (firstInput) firstInput.focus();
+}
+
+function closeModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function closeAnyOpenModal() {
+  const openModalEl = document.querySelector('.modal:not(.hidden)');
+  if (openModalEl) closeModal(openModalEl);
+}
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeAnyOpenModal();
+});
+
+// ✨ [핵심] 전역 클릭 이벤트 핸들러
+document.addEventListener('click', async (e) => {
+  
+  // --- 1. 모달 열기 버튼 ---
+  const openBtn = e.target.closest('[data-open-modal]');
+  if (openBtn) {
+    const type = openBtn.getAttribute('data-open-modal');
+
+    // [추가된 로직] 이미 로그인 상태라면 '로그인(시작하기)' 버튼 눌렀을 때 바로 대시보드로!
+    if (type === 'login' && isLoggedIn) {
+      handlePageNavigation('dashboard'); // 대시보드로 이동
+      setActiveNav('dashboard');         // 상단 메뉴 '대시보드' 활성화
+      return;                            // 모달 열지 않고 종료
+    }
+
+    closeAnyOpenModal();
+    hideLoginMessage();
+    
+    const modalMap = {
+      'login': 'modal-login', 'about': 'modal-about', 'signup': 'modal-signup',
+      'forgot': 'modal-forgot', 'plant-detail': 'modal-plant-detail',
+      'diary': 'modal-diary',
+      'photo': 'modal-photo', 'memo': 'modal-memo', 'plant-register': 'modal-plant-register',
+      'password': 'modal-password', 'edit-name': 'modal-edit-name',
+      'edit-email': 'modal-edit-email', 'edit-phone': 'modal-edit-phone',
+      'edit-address': 'modal-edit-address'
+    };
+    if (modalMap[type]) openModal(modalMap[type]);
+    return;
+  }
+
+  // --- 2. 모달 닫기 버튼 ---
+  if (e.target.closest('[data-close-modal]')) {
+    closeModal(e.target.closest('.modal'));
+    return;
+  }
+
+  // --- 3. 홈 로고 클릭 ---
+  if (e.target.closest('[data-go-home]')) {
+    e.preventDefault?.();
+    closeAnyOpenModal();
+    showPage('page-home');
+    setActiveNav('home');
+    return;
+  }
+
+  // --- 4. 네비게이션 메뉴 클릭 ---
+  const nav = e.target.closest('[data-nav]');
+  if (nav) {
+    e.preventDefault();
+    const target = nav.getAttribute('data-nav');
+    setActiveNav(target);
+    handlePageNavigation(target);
+  }
+  
+  // --- 5. 탭 버튼 클릭 ---
+  handleTabClicks(e);
+
+  // // --- 6. 로그아웃 버튼 (헤더 & 설정페이지) ---
+  // if (e.target.id === 'btn-logout' || e.target.id === 'header-btn-logout') {
+  //   if (confirm('정말 로그아웃 하시겠습니까?')) {
+  //     // ⚠️ [BACKEND TODO] : 로그아웃 API 호출
+  //     alert('로그아웃 되었습니다.');
+  //     window.location.reload(); 
+  //   }
+  //   return;
+  // }
+
+  // --- 6. 로그아웃 버튼 ---
+if (e.target.id === 'btn-logout' || e.target.id === 'header-btn-logout') {
+  if (confirm('정말 로그아웃 하시겠습니까?')) {
+    localStorage.clear(); // 👈 이거 꼭 추가! 저장소 싹 비우기
+    alert('로그아웃 되었습니다.');
+    window.location.reload(); 
+  }
+  return;
+}
+
+// --- 7. 회원 탈퇴 버튼 ---
+  if (e.target.id === 'btn-delete') {
+    const check = prompt('탈퇴하려면 "동의"라고 입력해주세요.');
+    
+    if (check === '동의') {
+      const email = localStorage.getItem('userEmail');
+      
+      if (!email) {
+        alert("로그인 정보가 없어서 탈퇴 처리를 할 수 없어!");
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://192.168.219.197:3001/api/user/withdraw/${email}`, {
+          method: "DELETE"
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          alert('그동안 GreenSync와 함께해주셔서 감사합니다. 🌿👋');
+          localStorage.clear(); 
+          window.location.reload(); 
+        } else {
+          alert('탈퇴 처리 실패: ' + result.message);
+        }
+      } catch (err) {
+        console.error("탈퇴 통신 에러:", err);
+        alert("서버와 통신 중 문제가 발생했어!");
+      }
+    } else {
+      alert('탈퇴 처리가 취소되었습니다.');
+    }
+    return;
+  }
+});
+
+
+/* ====================================================================
+   2. Page Navigation & Demo Mode
+   ==================================================================== */
+
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  const page = document.getElementById(pageId);
+  if (page) page.classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setActiveNav(target) {
+  document.querySelectorAll('.nav__item').forEach(a => {
+    a.classList.toggle('nav__item--active', a.getAttribute('data-nav') === target);
+  });
+}
+
+// 로그인 체크 및 잠금 화면(Blur) 처리
+function handlePageNavigation(target) {
+  if (target === 'home') {
+    showPage('page-home');
+    return;
+  }
+
+  const pageId = `page-${target}`;
+  showPage(pageId);
+  const pageEl = document.getElementById(pageId);
+
+  const existingOverlay = pageEl.querySelector('.lock-overlay');
+  if (existingOverlay) existingOverlay.remove();
+
+  if (!isLoggedIn) {
+    // 🔒 잠금 모드
+    const overlay = document.createElement('div');
+    overlay.className = 'lock-overlay';
+    overlay.innerHTML = `
+      <div class="lock-msg-box">
+        <span class="lock-icon" style="font-size:48px; display:block; margin-bottom:16px;">🔒</span>
+        <h3 class="lock-title" style="font-size:22px; font-weight:800; margin-bottom:8px;">로그인이 필요해요</h3>
+        <p class="lock-desc" style="color:#64748b; margin-bottom:24px;">
+          식집사님의 소중한 데이터를 보려면<br>로그인을 해주세요.
+        </p>
+        <button class="btn btn--solid btn--lg" onclick="openModal('modal-login')">로그인 하러가기</button>
+      </div>
+    `;
+    pageEl.appendChild(overlay);
+  } else {
+    // 🔓 잠금 해제
+    initPageTabs(target);
+  }
+}
+
+function initPageTabs(target) {
+  if (target === 'dashboard') {
+    document.getElementById('dash-emotion')?.classList.remove('hidden');
+    document.getElementById('dash-env')?.classList.add('hidden');
+    activateSidebar('#page-dashboard', '[data-dash-tab="emotion"]');
+  } 
+  else if (target === 'growth') {
+    document.querySelectorAll('.growth-panel').forEach(p => {
+        p.classList.remove('active', 'hidden');
+    });
+    document.getElementById('growth-timelapse')?.classList.add('active');
+    activateSidebar('#page-growth', '[data-growth-tab="timelapse"]');
+  } 
+  else if (target === 'report') {
+    document.querySelectorAll('.report-panel').forEach(p => p.classList.add('hidden'));
+    document.getElementById('report-skill')?.classList.remove('hidden');
+    activateSidebar('#page-report', '[data-report-tab="skill"]');
+  } 
+  else if (target === 'settings') {
+    document.querySelectorAll('.settings-panel').forEach(p => p.classList.add('hidden'));
+    document.getElementById('settings-info')?.classList.remove('hidden');
+    activateSidebar('#page-settings', '[data-settings-tab="info"]');
+  }
+}
+
+function activateSidebar(pageId, activeSelector) {
+  document.querySelectorAll(`${pageId} .side-menu__item`).forEach(b => b.classList.remove('is-active'));
+  document.querySelector(activeSelector)?.classList.add('is-active');
+}
+
+function handleTabClicks(e) {
+  if (!isLoggedIn && !e.target.closest('[data-nav="home"]')) return;
+
+  const dashBtn = e.target.closest('[data-dash-tab]');
+  if (dashBtn) {
+    const tab = dashBtn.dataset.dashTab;
+    activateSidebar('#page-dashboard', `[data-dash-tab="${tab}"]`);
+    document.getElementById('dash-emotion')?.classList.toggle('hidden', tab !== 'emotion');
+    document.getElementById('dash-env')?.classList.toggle('hidden', tab !== 'env');
+  }
+  
+  const growthBtn = e.target.closest('[data-growth-tab]');
+  if (growthBtn) {
+    const target = growthBtn.dataset.growthTab;
+    activateSidebar('#page-growth', `[data-growth-tab="${target}"]`);
+    document.querySelectorAll('.growth-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`growth-${target}`)?.classList.add('active');
+  }
+
+  const reportBtn = e.target.closest('[data-report-tab]');
+  if (reportBtn) {
+    const tab = reportBtn.dataset.reportTab;
+    activateSidebar('#page-report', `[data-report-tab="${tab}"]`);
+    document.querySelectorAll('.report-panel').forEach(p => p.classList.add('hidden'));
+    document.getElementById(`report-${tab}`)?.classList.remove('hidden');
+  }
+
+  const settingBtn = e.target.closest('[data-settings-tab]');
+  if (settingBtn) {
+    const tab = settingBtn.dataset.settingsTab;
+    activateSidebar('#page-settings', `[data-settings-tab="${tab}"]`);
+    document.querySelectorAll('.settings-panel').forEach(p => p.classList.add('hidden'));
+    document.getElementById(`settings-${tab}`)?.classList.remove('hidden');
+  }
+}
+
+function showLoginMessage(message, type = 'error') {
+  const box = document.getElementById('login-alert');
+  if (!box) return;
+  box.textContent = message;
+  box.classList.remove('hidden');
+  box.classList.toggle('form-alert--success', type === 'success');
+}
+function hideLoginMessage() {
+  const box = document.getElementById('login-alert');
+  if (!box) return;
+  box.textContent = '';
+  box.classList.add('hidden');
+  box.classList.remove('form-alert--success');
+}
+
+
+function updateHeaderToLoggedIn() {
+  const authBtn = document.getElementById('auth-buttons');
+  const email = localStorage.getItem('userEmail') || '식집사';
+  
+  if (authBtn) {
+    authBtn.innerHTML = `
+      <span class="link-btn" style="cursor:default; margin-right:8px;"><b>${email.split('@')[0]}</b>님</span>
+      <button class="link-btn" id="header-btn-logout" style="font-size:14px; color:#64748b;">로그아웃</button>
+    `;
+  }
+}
+
+
+/* ====================================================================
+   3. [BACKEND] 초기화 & 데이터 로딩
+   ==================================================================== */
+
+// 실시간 업데이트용
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. 기존에 잘 되던 기본 설정 (이건 그대로 둬!)
+  showPage('page-home');
+  setActiveNav('home');
+  refreshDashboard();    // 대시보드 새로고침
+  loadStatistics();      // 분석 로드
+  console.log("🌿 GreenSync Front-end Ready.");
+
+  // 2. 로그인 상태만 슬쩍 확인 (복잡한 fetch 없이 저장소만 확인)
+  const savedLogin = localStorage.getItem('isLoggedIn');
+  if (savedLogin === 'true') {
+    isLoggedIn = true; // 전역 변수 업데이트
+    if (typeof updateHeaderToLoggedIn === 'function') {
+      updateHeaderToLoggedIn(); // 헤더만 살짝 바꿔줌
+    }
+  // ✨ [3. 추가된 부분] 로그인 되어있다면 비서를 시켜서 식물 정보를 가져와!
+  const savedEmail = localStorage.getItem('userEmail');
+  console.log("🏠 로그인 확인 완료! 식물 정보를 불러옵니다...");
+  checkAndRenderPlantUI(savedEmail);
+  }
+  // 4. 데이터 페이지 바로 불러오기1 ()
+  const savedEmail = localStorage.getItem('userEmail');
+  const chartCanvas = document.getElementById('growthChart');
+  if (savedEmail && chartCanvas) {
+        initGrowthDashboard(savedEmail); // 페이지 열리자마자 바로 실행!
+    }
+  // 5. 데이터 페이지 바로 불러오기2 (성장 차트 + 타임라인)  
+  const timelineList = document.querySelector('.timeline--cards');
+  if (timelineList) {
+      console.log("📅 타임라인 로드를 시작합니다...");
+      loadTimeline(); 
+  }
+  // 6. 평균 환경 데이터 로드!
+  if (document.getElementById('avg-temp-val')) {
+      console.log("📊 평균 환경 데이터 로드를 시작합니다...");
+      loadAverageStats(); 
+  }
+
+  // 7. 식물 상태 상세정보 모달
+  const detailBtn = document.querySelector('[data-open-modal="plant-detail"]');
+  if (detailBtn) {
+      detailBtn.addEventListener('click', () => {
+          console.log("🌿 상세 정보를 불러옵니다...");
+          openPlantDetail(); // 모달 데이터를 채우는 함수 호출!
+      });
+  }
+
+  // 7. 대시보드 새로고침
+  refreshDashboard();
+});
+
+// 다른탭 보다가 다시 와도 로드
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      const now = Date.now();
+      if (now - lastLoadTime > 60000) { 
+        // console.log("다시 돌아오셨군요! 데이터를 새로 불러옵니다.");
+        loadStatistics();
+        lastLoadTime = now; // 시간 갱신
+      } else {
+        // console.log("방금 불러왔으니 조금 있다가 갱신할게요.");
+      }    
+    }
+});
+
+// 초기화 설정 (범수)
+// document.addEventListener('DOMContentLoaded', () => {
+//   showPage('page-home');
+//   setActiveNav('home');
+//   console.log("🌿 GreenSync Front-end Ready.");
+
+//   // ⚠️ [BACKEND TODO] : 세션 확인 후 로그인 상태 유지
+//   // fetch('/api/session')...
+// });
+
+/* ====================================================================
+   4. [BACKEND] 인증 관련 로직
+   ==================================================================== */
+
+// 🔐 로그인 처리 (최종 개선본)
+document.addEventListener('submit', async (e) => {
+  const formId = e.target.id;
+
+  if (formId === 'login-form') {
+    e.preventDefault(); // 기본 동작 막기
+    
+    const email = document.getElementById('login-email')?.value;
+    const pw = document.getElementById('login-pass')?.value;
+
+    if (!email || !pw) {
+      alert("이메일과 비밀번호를 모두 입력해줘!");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://192.168.219.197:3001/api/user/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, pw })
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        // 로그인 성공 시 정보 저장
+        localStorage.setItem('userEmail', email);
+        localStorage.setItem('isLoggedIn', 'true');
+        
+        // 전역 상태 업데이트
+        isLoggedIn = true; 
+        
+        alert(`${email}님, 반갑습니다! 🌿`);
+        
+        closeAnyOpenModal(); // 모달 닫기
+        updateHeaderToLoggedIn(); // 헤더 UI 변경
+        
+        // 🪴 식물 정보가 있다면 렌더링
+        if (typeof checkAndRenderPlantUI === 'function') {
+          await checkAndRenderPlantUI(email);
+        }
+
+        // 현재 페이지 리프레시 (대시보드 잠금 해제 등을 위해)
+        const activeNav = document.querySelector('.nav__item--active');
+        if (activeNav) handlePageNavigation(activeNav.dataset.nav);
+
+      } else {
+        // 서버에서 거부 (비번 틀림 등)
+        alert(result.message || "로그인 정보를 다시 확인하세요");
+      }
+    } catch (err) {
+      console.error("로그인 통신 에러:", err);
+      alert("서버와 연결할 수 없음");
+    }
+  }
+});
+
+// // 🔐 회원가입 처리 (범수)
+// document.addEventListener('submit', (e) => {
+//   if (e.target && e.target.id === 'signup-form') {
+//     e.preventDefault();
+//     // ⚠️ [BACKEND TODO] : 회원가입 API 호출
+//     alert('회원가입 버튼 동작! (API 연결 필요)');
+//     closeAnyOpenModal();
+//   }
+// });
+
+// 🔐 [교체] 회원가입 처리 (실제 API 연결)
+document.addEventListener('submit', async (e) => { // async 잊지 말고!
+  if (e.target && e.target.id === 'signup-form') {
+    e.preventDefault();
+
+    // 1. 폼 데이터 가져오기 (HTML input의 id를 확인해줘!)
+    const userName = document.getElementById('signup-name')?.value?.trim();
+    const email    = document.getElementById('signup-email')?.value?.trim();
+    const password = document.getElementById('signup-pass')?.value;
+    const confirmPw = document.getElementById('signup-pass-confirm')?.value;
+
+    // 2. 기본적인 유효성 검사
+    if (password !== confirmPw) {
+      alert("비밀번호가 서로 일치하지 않음");
+      return;
+    }
+
+    if (password.length < 4) {
+      alert("비밀번호는 최소 4자 이상으로 설정!");
+      return;
+    }
+
+    try {
+      // 3. 백엔드 API 호출
+      const response = await fetch('http://192.168.219.197:3001/api/user/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: userName,
+          email: email,
+          pw: password // 백엔드에서 받는 이름이 password라면 password로 수정!
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // ✅ 회원가입 성공
+        alert(`${userName}님, GreenSync의 식집사가 되신 걸 환영합니다! 로그인을 진행해주세요.`);
+        closeAnyOpenModal();
+        
+        // 가입 성공 후 바로 로그인 모달을 띄워주면 센스 만점!
+        setTimeout(() => openModal('modal-login'), 500);
+        
+      } else {
+        // 가입 실패 (이미 존재하는 이메일 등)
+        alert(result.message || "회원가입 실패, 다시 시도하세요.");
+      }
+    } catch (error) {
+      console.error("Signup Error:", error);
+      alert("서버와 통신하는 중 문제 발생");
+    }
+  }
+});
+
+// 🔐 비밀번호 찾기
+document.addEventListener('submit', (e) => {
+  if (e.target && e.target.id === 'forgot-form') {
+    e.preventDefault();
+    // ⚠️ [BACKEND TODO] : 비밀번호 찾기 API
+    alert('임시: 비밀번호 찾기 요청');
+    closeAnyOpenModal();
+  }
+});
+
+
+
+
+/* ====================================================================
+   5. [BACKEND] 데이터 관리 로직
+   ==================================================================== */
+
+// 🌿 반려식물 등록/수정
+// 🌿 반려식물 등록 처리 (전체 로직)
+document.addEventListener('submit', async (e) => {
+  if (e.target && e.target.id === 'plant-form') {
+    e.preventDefault();
+
+    const email = localStorage.getItem('userEmail');
+    const plantName = document.getElementById('plant-name')?.value; // 모달 안의 input ID
+    const plantSpecies = document.getElementById('plant-species')?.value;
+    const plantDate = document.getElementById('plant-date')?.value;
+
+    try {
+      const res = await fetch("http://192.168.219.197:3001/api/plants/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plantName, plantSpecies, plantDate, email })
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        alert('식물 등록 완료!');
+        closeAnyOpenModal(); // 모달 닫고
+
+        // ✨ 바로 여기서 다시 UI를 체크하는 거야!
+        // 이 함수가 돌면서 'hidden'을 지우고 새로 등록된 이름을 넣어줄 거야.
+        await checkAndRenderPlantUI(email); 
+        
+      } else {
+        alert('등록 실패: ' + result.message);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+});
+
+// 🌿 반려식물 삭제 처리 (core4_jss.js)
+const btnPlantDelete = document.getElementById('btn-plant-delete');
+
+if (btnPlantDelete) {
+  btnPlantDelete.addEventListener('click', async () => {
+    const email = localStorage.getItem('userEmail'); // 누구 식물인지 알아야 하니까!
+
+    if (!email) {
+      alert("로그인 정보가 없음");
+      return;
+    }
+
+    if (confirm('정말 이 반려식물을 삭제하시겠습니까?\n모든 성장 기록이 사라집니다.')) {
+      try {
+        // 1. 서버에 삭제 요청 (DELETE 방식)
+        const res = await fetch(`http://192.168.219.197:3001/api/plants/${email}`, {
+          method: "DELETE"
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          alert('식물이 삭제되었습니다.');
+
+          // 2. 화면 갱신 (비서 함수를 다시 불러서 '없음' 화면으로 돌리기)
+          if (typeof checkAndRenderPlantUI === 'function') {
+            await checkAndRenderPlantUI(email);
+          }
+        } else {
+          alert('삭제 실패: ' + result.message);
+        }
+      } catch (err) {
+        console.error("삭제 통신 에러:", err);
+        alert("서버와 연결할 수 없음");
+      }
+    }
+  });
+}
+
+
+// ============== 식물상태 상세정보 모달 시작 ==============
+
+async function openPlantDetail() {
+    try {
+        // 1. 우리가 만든 쿼리 주소로 요청!
+        const response = await fetch('/api/current-status');
+        const data = await response.json();
+
+        if (data) {
+            // 2. 온습도/조도 업데이트
+            document.getElementById('detail-temp').textContent = `${Number(data.temp).toFixed(1)}°C (현재)`;
+            document.getElementById('detail-humi').textContent = `${Number(data.hum).toFixed(1)}% (현재)`;
+            
+            // 조도 1500 기준 상태 판별
+            let lightStatus = "부족함 ☁️";
+            if (data.light >= 1000) lightStatus = "매우 충분 ☀️";
+            else if (data.light >= 400) lightStatus = "적당함 🌤️";
+            document.getElementById('detail-light').textContent = lightStatus;
+
+            // ✨ 3. 물주기 남은 날짜 계산 로직!
+            // RECOMMENDED_CYCLE(권장 주기)과 last_soil_date(마지막 물준 날) 활용
+            if (data.last_soil_date && data.RECOMMENDED_CYCLE) {
+                const lastWatering = new Date(data.last_soil_date);
+                const today = new Date();
+                
+                // 마지막 물준 날로부터 흐른 날짜 계산
+                const diffTime = Math.abs(today - lastWatering);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                const remainingDays = data.RECOMMENDED_CYCLE - diffDays;
+                
+                let wateringText = "";
+                if (remainingDays > 0) wateringText = `${remainingDays}일 후`;
+                else if (remainingDays === 0) wateringText = `오늘 줘야 해요! 💧`;
+                else wateringText = `${Math.abs(remainingDays)}일 지남 (얼른 줘!)`;
+                
+                document.getElementById('detail-watering').textContent = wateringText;
+            } else {
+                document.getElementById('detail-watering').textContent = "기록 없음";
+            }
+
+            // 4. 모달 열기!
+            document.getElementById('modal-plant-detail').classList.remove('hidden');
+        }
+    } catch (err) {
+        console.error("모달 데이터 로드 실패!", err);
+        alert("데이터를 불러오는 데 문제가 생겼어, 친구야!");
+    }
+}
+// ============== 식물상태 상세정보 모달 끝 ==============
+
+
+
+// ============== 환경 데이터 페이지 시작 ==============
+
+// 실시간 환경 데이터 (가장 최근)
+// 1. 서버에서 최신 데이터를 가져와서 화면을 고치는 함수
+async function refreshDashboard() {
+    try {
+        // 서버 라우터 주소 (GET, /api/current-status)
+        const response = await fetch('/api/current-status');
+        if (!response.ok) throw new Error('데이터 응답 에러');
+        
+        const data = await response.json();
+
+        if (data) {
+            // 기본 환경 데이터
+            document.getElementById('current-temp').textContent = `${data.temp.toFixed(1)}°C`;
+            document.getElementById('current-hum').textContent = `${data.hum.toFixed(1)}%`;
+            document.getElementById('current-light').textContent = `${data.light.toFixed(1)}lux`;
+
+            // [B] 토양 센서 날짜로 D-Day 계산하기
+            if (data.last_soil_date) {
+                const dDayText = calculateDDay(data.last_soil_date, data.RECOMMENDED_CYCLE);                
+                const waterElement = document.getElementById('water-dday');
+                waterElement.textContent = dDayText;
+                
+                // 만약 오늘 물 줘야 하면 빨간색!
+                if (dDayText === "D-Day" || dDayText === "D-0") {
+                    waterElement.style.color = "#ef4444"; 
+                } else {
+                    waterElement.style.color = "#0284c7";
+                }
+            }
+        }
+    } catch (error) {
+        console.error("대시보드 데이터 로드 실패:", error);
+    }
+}
+
+// 2. 날짜 차이를 계산해서 D-Day 문자열을 만드는 도우미 함수
+function calculateDDay(lastDate, cycle) {
+    const last = new Date(lastDate);
+    const today = new Date();
+    
+    // 두 날짜의 차이 계산
+    const diffTime = today - last;
+    const passedDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // 권장 주기(cycle)에서 흐른 날(passedDays)을 빼면 남은 날!
+    const remaining = cycle - passedDays;
+    
+    if (remaining === 0) return "D-Day";
+    if (remaining < 0) return `D+${Math.abs(remaining)}`; // 주기 지남!
+    return `D-${remaining}`;
+}
+
+// 평균 환경 데이터 (최근 7일)
+async function loadAverageStats() {
+  // console.log("1. 함수 시작!"); // 👈 실행되는지 확인
+    const email = localStorage.getItem('userEmail');
+    if (!email) return;
+
+    try {
+        const response = await fetch(`/api/average-stats/${email}`);
+        // console.log("서버 응답 상태",response.status);
+        const result = await response.json();
+        // console.log("DB로부터 받은 데이터",result);
+        
+        if (result.success && result.data.length > 0) {
+            let sumTemp = 0, sumHumi = 0, sumLight = 0;
+            const count = result.data.length;
+
+            result.data.forEach(item => {
+                sumTemp += item.TEMP_AVG || 0;
+                sumHumi += item.HUMI_AVG || 0;
+                sumLight += item.LIGHT_AVG || 0;
+            });
+
+            const finalAvgTemp = (sumTemp / count).toFixed(1);
+            const finalAvgHumi = (sumHumi / count).toFixed(0);
+            const finalAvgLight = (sumLight / count).toFixed(0); // lux는 정수로!
+
+            // 1. 화면에 숫자 꽂아주기
+            document.getElementById('avg-temp-val').textContent = `${finalAvgTemp}°C`;
+            document.getElementById('avg-humi-val').textContent = `${finalAvgHumi}%`;
+            document.getElementById('avg-light-val').textContent = `${finalAvgLight} lux`;
+
+            // 2. 바(Bar) 퍼센트 조절하기 (조도 2000 기준 반영 ✨)
+            const tempPercent = Math.min((finalAvgTemp / 40) * 100, 100);
+            
+            // 💡 조도 퍼센트 계산: (현재값 / 1500) * 100
+            const lightPercent = Math.min((finalAvgLight / 1500) * 100, 100);
+            
+            document.getElementById('avg-temp-bar').style.width = `${tempPercent}%`;
+            document.getElementById('avg-humi-bar').style.width = `${finalAvgHumi}%`;
+            document.getElementById('avg-light-bar').style.width = `${lightPercent}%`; // ✨ 수정된 부분!
+        }
+    } catch (err) {
+        console.error("평균 데이터 업데이트 중 에러:", err);
+    }
+}
+
+// ============== 환경 데이터 페이지 끝 ==============
+
+
+// ============== 타임랩스 페이지 시작 ==============
+// timelapse-action클래스의 btn클래스를 찾아줘 -> 그리고 선언
+const btnTimelapsePlay = document.querySelector('.timelapse-actions .btn');
+
+if (btnTimelapsePlay) {
+  btnTimelapsePlay.addEventListener('click', async () => {
+    const email = localStorage.getItem('userEmail');
+    // HTML input[type="date"]에서 값 가져오기
+    const dateInputs = document.querySelectorAll('.timelapse-input');
+    /*
+      const dateInputs = [{
+        tagName: 'INPUT', 
+        type: 'date', 
+        value: '2025-12-01', 
+        className: 'timelapse-input',
+      },
+    */
+    const startDate = dateInputs[0].value;
+    const endDate = dateInputs[1].value;
+
+    if (!startDate || !endDate) {
+      alert("시작일과 종료일을 선택하세요");
+      return;
+    }
+
+    try {
+      // 서버로 데이터 요청 (GET 방식)
+      const res = await fetch(`http://192.168.219.197:3001/api/timelapse/${email}?start=${startDate}&end=${endDate}`);
+      const result = await res.json();
+      console.log(result);
+      // result.images;
+      /* [ {
+          IMG_PATH: "raspi_img\img20260204124738.jpg",
+          CREATED_AT: "2026-02-06 09:00:00"
+          }, ...}] */
+
+      if (result.success) {
+        // console.log("이미지를 이만큼 찾았어:", result.images.length);
+        // 여기서 이미지를 화면에 순차적으로 보여주는 함수 실행!
+        runTimelapse(result.images);
+      } else {
+        alert(result.message);
+      }
+    } catch (err) {
+      console.error("타임랩스 요청 실패:", err);
+    }
+  });
+}
+// 타임랩스 함수
+function runTimelapse(images) {
+  if (!images || images.length === 0) return;
+  const serverUrl = "http://192.168.219.197:3001"; // ⬅️ 친구의 서버 IP 주소 확인!
+  
+  // [속도 개선] 브라우저 메모리에 이미지 미리 로드하기
+  images.forEach(img => {
+    const preImg = new Image();
+    const cleanPath = img.IMG_PATH.replace(/\\/g, '/');
+    preImg.src = `${serverUrl}/${cleanPath}`; 
+  });
+
+  // 1. 이미지를 보여줄 영역
+  const screen = document.querySelector('#timelapse-screen');
+  // 2. 스크린 초기화 (이미지 태그 2개를 겹쳐서 만듦, 깜빡임 현상 완화)
+  screen.innerHTML = `
+        <img id="img1" style="position:absolute; width:100%; height:100%; object-fit:cover; opacity:1;">
+        <img id="img2" style="position:absolute; width:100%; height:100%; object-fit:cover; opacity:0;">
+  `;
+  const img1 = document.getElementById('img1');
+  const img2 = document.getElementById('img2');
+
+  let index = 0;
+  const speed = 100;  
+  
+  // 3. 0.5초(500ms)마다 반복 실행하는 타이머 시작!
+  const timer = setInterval(() => {
+    // [종료 조건] 모든 이미지를 다 보여줬다면?
+    if (index >= images.length) {
+      clearInterval(timer); // 타이머 멈춤
+      alert("전체 타임랩스 재생이 완료되었습니다!");
+      // dateLabel.textContent = originalTitle; // 제목 복구
+      return;
+    }
+    
+    // 4. 현재 순서의 이미지 정보 가져오기
+    const currentImg = images[index];
+    // 역슬래시 > 슬래시
+    const cleanPath = currentImg.IMG_PATH.replace(/\\/g, '/');
+    const fullPath = `${serverUrl}/${cleanPath}`;
+    console.log(fullPath);
+
+    // 5. 번갈아가며 이미지 교체 (짝수면 img1, 홀수면 img2)    
+    if (index % 2 === 0) {
+      img1.src = fullPath;
+      img1.style.opacity = 1;
+      img2.style.opacity = 0;
+    } else {
+      img2.src = fullPath;
+      img2.style.opacity = 1;
+      img1.style.opacity = 0;
+    }
+    
+    // 6. 다음 이미지로 넘어가기
+    index++;
+  }, 50); // 속도 조절: 500은 0.5초, 100으로 하면 0.1초
+}
+// ============== 타임랩스 페이지 끝 ==============
+
+
+
+
+
+// // 사용자 정보 수정
+// document.addEventListener('submit', (e) => {
+//   const id = e.target.id;
+//   if (['form-edit-name', 'form-edit-phone', 'form-edit-address', 'form-edit-email'].includes(id)) {
+//     e.preventDefault();
+//     // ⚠️ [BACKEND TODO] : 사용자 프로필 업데이트 API
+//     alert('성공적으로 수정되었습니다! (API 연결 필요)');
+//     closeAnyOpenModal();
+//     e.target.reset();
+//   }
+// });
+
+// // 🔐 비밀번호 변경
+// document.addEventListener('submit', (e) => {
+//   if (e.target && e.target.id === 'password-form') {
+//     e.preventDefault();
+//     const newPw = document.getElementById('new-pw').value;
+//     const confirmPw = document.getElementById('confirm-pw').value;
+
+//     if (newPw.length < 4) { alert('비밀번호는 4자 이상이어야 합니다.'); return; }
+//     if (newPw !== confirmPw) { alert('새 비밀번호가 일치하지 않습니다.'); return; }
+
+//     // ⚠️ [BACKEND TODO] : 비밀번호 변경 API
+//     alert('비밀번호가 성공적으로 변경되었습니다!');
+//     closeAnyOpenModal();
+//     e.target.reset();
+//   }
+// });
+
+
+// 나의 정보 페이지
+async function renderUserProfile(email) {
+  if (!email) return;
+
+  try {
+    console.log(email)
+    const res = await fetch(`http://192.168.219.197:3001/api/user/profile/${email}`);
+    const result = await res.json();
+    
+    if (result.success) {
+      // 1. HTML에서 이름과 이메일이 들어갈 위치를 찾아 (ID는 네 HTML에 맞게 수정해!)
+      const heroNameEl = document.querySelector('.profile-hero__name');
+      const nameEl = document.getElementById('profile-name');
+      const emailEl = document.getElementById('profile-email');
+      const dateEl = document.getElementById('profile-date');
+
+      // 2. 서버에서 받은 진짜 데이터로 갈아끼우기
+      if (heroNameEl) heroNameEl.textContent = `${result.userName}님`;
+      if (nameEl) nameEl.textContent = result.userName;
+      if (emailEl) emailEl.textContent = result.email;
+      const date= result.createAt.split('T')[0]; // 표준시 형식 > 날짜형식으로 치환
+      if (dateEl) dateEl.textContent = `가입일 : ${date}`;
+
+      console.log("프로필 업데이트 완료:", result.userName);
+    }
+  } catch (err) {
+    console.error("프로필 로딩 실패:", err);
+  }
+}
+
+// 데이터 통계 페이지
+async function loadStatistics() {
+    try {
+      // 금고(localStorage)에서 이메일 꺼내기
+      const userEmail = localStorage.getItem('userEmail'); 
+        
+      if (!userEmail) {
+        console.log("로그인 정보가 없습니다.");
+        return;
+        }
+      // 1. 노드 서버에 분석 데이터 요청!
+
+      // URL 뒤에 ?email=... 을 붙여서 전송
+      const response = await fetch(`http://192.168.219.197:3001/api/stats?email=${userEmail}`, {
+        method: 'GET'
+      });
+        
+      const result = await response.json();
+
+      if (result.success) {
+        const data = result.data;
+        const analysis = data.analysis;
+
+      // 하단 수치 업데이트
+      document.getElementById('avg-temp').innerText = `${analysis.avg_temp}°C`;
+      document.getElementById('avg-hum').innerText = `${analysis.avg_hum}%`;
+      document.getElementById('avg-light').innerText = `${analysis.avg_light} lux`;
+      document.getElementById('water-avg-interval').innerText = `${analysis.water_avg_interval}일`;
+      document.getElementById('water-total-month').innerText = `${analysis.water_total_month}회`;
+
+      // // 그래프 그리기
+      renderLineChart('tempChart', data.labels, data.temp_data, '#ff6384', '온도(°C)');
+      renderLineChart('humChart', data.labels, data.hum_data, '#36a2eb', '습도(%)');
+      renderLineChart('lightChart', data.labels, data.light_data, '#ffcd56', '조도(lux)');
+      renderBarChart('waterWeeklyChart', analysis.water_weekly);
+    }
+  } catch (error) {
+    console.error("데이터 로드 실패:", error);
+  }
+}
+
+// 그래프 그리는 함수
+function renderLineChart(canvasId, labels, chartData, color, labelName) {
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return; // 💡 캔버스가 없으면 건너뛰는 안전장치
+
+    const ctx = canvas.getContext('2d');
+    if (chartInstances[canvasId]) {
+        chartInstances[canvasId].destroy();
+    }
+
+    chartInstances[canvasId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: labelName,
+                data: chartData,
+                borderColor: color,
+                backgroundColor: color + '33', 
+                fill: true,
+                tension: 0.4 
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, // 💡 부모 컨테이너 크기에 맞춤
+            scales: { y: { beginAtZero: false } } 
+        }
+    });
+}
+
+function renderBarChart(canvasId, weeklyData) {
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (chartInstances[canvasId]) {
+        chartInstances[canvasId].destroy();
+    }
+    const labels = weeklyData.map(d => d.label);
+    const values = weeklyData.map(d => d.value);
+
+    chartInstances[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: weeklyData.map(d => d.label),
+            datasets: [{
+                label: '물주기 횟수',
+                data: weeklyData.map(d => d.value),
+                backgroundColor: '#4bc0c0'
+            }]
+        },
+        options: { 
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        // 💡 핵심: 눈금 간격을 1로 고정!
+                        stepSize: 1,
+                        // 소수점을 아예 안 나오게 정수로 포맷팅
+                        callback: function(value) {
+                            if (Math.floor(value) === value) {
+                                return value;
+                            }
+                        }
+                    }
+                  }
+              }
+        }
+    });
+}
+
+
+// =============== 성장 히스토리 시작 ===============
+// 사이드 메뉴 클릭으로 초기화
+const sideMenuItems = document.querySelectorAll('.side-menu__item');
+sideMenuItems.forEach(item => {
+    item.addEventListener('click', () => {
+        // 클릭한 버튼이 '성장 히스토리' 탭을 여는 버튼인지 확인
+        if (item.getAttribute('data-growth-tab') === 'history') {
+            const savedEmail = localStorage.getItem('userEmail');
+            
+            // 탭이 전환되어 화면에 캔버스가 나타날 시간을 아주 잠깐(0.1초) 줌
+            setTimeout(() => {
+                const chartCanvas = document.getElementById('growthChart');
+                if (savedEmail && chartCanvas) {
+                    console.log("성장 히스토리 탭 클릭됨 - 차트 초기화");
+                    initGrowthDashboard(savedEmail);
+                }
+            }, 100);
+        }
+    });
+});
+// 히스토리 요청
+let myGrowthChart = null;
+async function initGrowthDashboard(email) {
+    try {
+        // 1. 우리가 만든 노드 API 호출
+        const response = await fetch(`/api/growth/history/${email}`);
+        const result = await response.json();
+
+        if (!result.success || result.history.length === 0) return;
+
+        const history = result.history;
+        const lastData = history[history.length - 1];
+        const firstData = history[0];
+
+        // 2. 상단 KPI 업데이트 (+12% 부분)
+        document.querySelector('.gh-kpi__value').innerText = `${result.growthRate > 0 ? '+' : ''}${result.growthRate}%`;
+        // 3. 우측 상단 변화량 업데이트 (+3cm 부분)
+        const delta = (lastData.height - firstData.height).toFixed(1);
+        document.querySelector('.gh-card__delta').innerText = `${delta > 0 ? '+' : ''}${delta}cm`;
+
+        // 4. Chart.js로 그래프 그리기
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        
+        // 기존에 차트가 있다면 파괴해서 메모리를 비워줌
+        if (myGrowthChart !== null) {
+            myGrowthChart.destroy();
+        }
+        // 사진 느낌을 내기 위해 그라데이션 추가 (선택사항)
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(74, 222, 128, 0.3)');
+        gradient.addColorStop(1, 'rgba(74, 222, 128, 0)');
+        
+        // 5. 차트 설정
+        myGrowthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: history.map(item => item.date), // ["01-01", "01-05"...]
+                datasets: [{
+                    data: history.map(item => item.height),
+                    borderColor: '#4ade80',
+                    backgroundColor: gradient, // 연한 초록색 채우기
+                    fill: true,
+                    tension: 0.4, // 부드러운 곡선
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#4ade80'
+                }]
+            },
+            options: { // 👈 중복되었던 부분을 하나로 통합!
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            maxRotation: 0,
+                            autoSkip: true,
+                            font: { size: 12 }
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error("대시보드 로딩 실패:", err);
+    }
+}
+
+// 페이지 로드 시 실행 (로그인된 이메일 사용)
+const userEmail = localStorage.getItem('userEmail');
+initGrowthDashboard(userEmail);
+// =============== 성장 히스토리 끝 ===============
+
+// =============== 성장 다이어리 시작 ===============
+// 1. 파일 이름 표시 및 기분 선택 이벤트 (추가)
+document.addEventListener('change', (e) => {
+    if (e.target.id === 'diary-file') {
+        const fileName = e.target.files[0]?.name || "클릭하여 사진 업로드";
+        document.getElementById('file-name-display').innerText = fileName;
+    }
+});
+
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('mood__btn')) {
+        document.querySelectorAll('.mood__btn').forEach(btn => btn.classList.remove('is-active'));
+        e.target.classList.add('is-active');
+        document.getElementById('diary-mood').value = e.target.dataset.mood;
+    }
+});
+
+// 2. 통합 저장 로직 (기존 submit 리스너 수정)
+document.addEventListener('submit', async (e) => {
+  //HTML에서 만든 폼 ID
+  if (e.target.id === 'diary-form') {
+    e.preventDefault();
+
+    const fileInput = document.getElementById('diary-file');
+    const commentInput = document.getElementById('diary-text');
+    const moodInput = document.getElementById('diary-mood'); // hidden input
+    const userEmail = localStorage.getItem('userEmail');
+
+    // 최소한 하나는 입력했는지 확인 (방어 코드)
+    if (!fileInput.files[0] && !commentInput.value.trim()) {
+      alert('사진을 올리거나 내용을 입력해주세요!');
+      return;
+    }
+
+    // 📦 택배 박스(FormData) 만들기
+    const formData = new FormData();
+    
+    // 사진이 있으면 담기
+    if (fileInput.files[0]) {
+      formData.append('diaryImage', fileInput.files[0]);
+    }
+    
+    formData.append('userEmail', userEmail);
+    formData.append('comment', commentInput.value);
+    formData.append('emoji', moodInput.value);
+
+    try {
+      const response = await fetch('/api/diary/upload', {
+        method: 'POST',
+        body: formData // 파일이 있어서 JSON.stringify는 안 써!
+      });
+
+      const result = await response.json();
+
+      if (result.ok) {
+        alert('오늘의 기록이 타임라인에 저장됐어! 💚');
+        closeAnyOpenModal(); // 모달 닫기
+        location.reload();        
+      } else {
+        alert('저장 실패: ' + result.message);
+      }
+    } catch (err) {
+      console.error('서버 통신 에러:', err);
+      alert('서버와 연결할 수 없어! 백엔드가 켜져있는지 확인해봐.');
+    }
+  }
+});
+
+// 타임라인!
+async function loadTimeline() {
+    const userEmail = localStorage.getItem('userEmail');
+    const timelineContainer = document.querySelector('.timeline--cards');
+
+    if (!userEmail || !timelineContainer) return;
+
+    try {
+        const response = await fetch(`/api/diary/list/${userEmail}`);
+        const result = await response.json();
+
+        if (result.ok && result.data.length > 0) {
+            timelineContainer.innerHTML = '';
+
+            result.data.forEach(item => {
+                // console.log("📦 서버에서 받은 아이템 하나:", item);
+                // 🛠️ 날짜 처리 방어 로직 (여기가 핵심!)
+                let dateStr = "날짜 정보 없음";
+                let relativeStr = "";
+                
+                if (item.CREATED_AT) {
+                    const d = new Date(item.CREATED_AT);
+                    // 날짜가 유효한지 확인 (isNaN 체크)
+                    if (!isNaN(d.getTime())) {
+                        dateStr = d.toLocaleDateString(); // "2026. 2. 10." 형태
+                        relativeStr = getRelativeTime(item.CREATED_AT);
+                    }
+                }
+
+                const imageSection = item.IMG_PATH 
+                    ? `<div class="tcard__image" style="margin: 10px 0;">
+                         <img src="${item.IMG_PATH}" alt="식물사진" style="width:100%; border-radius:12px;">
+                       </div>` 
+                    : '';
+
+                const cardHtml = `
+                    <article class="tcard tcard--green">
+                        <div class="tcard__bar"></div>
+                        <div class="tcard__row">
+                            <div class="tcard__icon" aria-hidden="true">${item.EMOJI || '🌿'}</div>
+                            <div class="tcard__main">
+                                <div class="tcard__meta">
+                                    <span class="tcard__date">${dateStr}</span>
+                                    <span class="tcard__tag">${relativeStr}</span>
+                                </div>
+                                ${imageSection}
+                                <div class="tcard__text">${item.MEMO_TEXT || ''}</div>
+                            </div>
+                        </div>
+                    </article>
+                `;
+                timelineContainer.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+    } catch (err) {
+        console.error("타임라인 로드 실패:", err);
+    }
+}
+
+// 💡 보너스: '오늘', '어제' 등을 계산해주는 함수
+function getRelativeTime(dateString) {
+    const now = new Date();
+    const target = new Date(dateString);
+    const diffDays = Math.floor((now - target) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return '오늘';
+    if (diffDays === 1) return '어제';
+    return `${diffDays}일 전`;
+}
+
+
+// 함수 추가
+/*
+    사용자의 반려식물 정보를 가져와서 화면을 업데이트하는 비서 함수
+ */
+async function checkAndRenderPlantUI(email) {
+  const emptyState = document.getElementById('plant-empty-state');
+  const existState = document.getElementById('plant-exist-state');
+
+  // 이메일이 없으면 실행 안 함
+  if (!email) return;
+
+  try {
+    // 1. 서버에 해당 유저의 식물 정보 요청 (GET 방식)
+    console.log("지금 이메일:", email);
+    const res = await fetch(`http://192.168.219.197:3001/api/plants/${email}`);
+    const result = await res.json();
+    // console.log("서버가 준 결과:", result);
+    if (result.success && result.hasPlant) {
+      // ✅ 식물이 있는 경우: '있음' 화면 보여주고 데이터 채우기
+      emptyState?.classList.add('hidden');
+      existState?.classList.remove('hidden');
+
+      // HTML의 식물 이름을 서버 데이터로 교체
+      const nameEl = document.getElementById('tree-name')
+      if (nameEl) nameEl.textContent = result.plantName;
+
+      // ✅ 3. 함께한 날짜(D-Day) 계산 로직
+      const periodEl = document.getElementById('tree-period');
+      if (periodEl && result.plantDate) {
+        const today = new Date();
+        const startDate = new Date(result.plantDate);
+        
+        // 날짜 차이 계산기
+        const diffTime = today - startDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // 오늘부터 1일!
+
+        periodEl.textContent = `${diffDays}일 동안 함께 성장했습니다 🌱`;
+      }
+      
+      console.log("UI 업데이트 완료:", result.plantNAME);
+    } else {
+      // 식물이 없는 경우: '없음' 화면 보여주기
+      emptyState?.classList.remove('hidden');
+      existState?.classList.add('hidden');
+    }
+  } catch (err) {
+    console.error("식물 정보 로딩 실패:", err);
+  }
+}
+
+// 환경설정 반응 안하는 문제 해결 함수
+function handlePageNavigation(navTarget) {
+  // 1. 원래 페이지를 바꿔주던 함수를 먼저 실행
+  // (이 함수 이름이 showPage가 아닐 수도 있으니 확인)
+  if (typeof showPage === 'function') {
+    showPage(`page-${navTarget}`); 
+  }
+
+  // 2. 환경설정(settings)이나 프로필(profile)로 갈 때만 데이터 로드
+  if (navTarget === 'settings' || navTarget === 'profile') {
+    const email = localStorage.getItem('userEmail');
+    if (email) {
+      console.log("👤 프로필 데이터 로딩 시작...");
+      renderUserProfile(email); 
+    }
+  }
+
+  // 3. 내비게이션 활성화 표시
+  if (typeof setActiveNav === 'function') {
+    setActiveNav(navTarget);
+  }
+}

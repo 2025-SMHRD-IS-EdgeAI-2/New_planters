@@ -1,0 +1,95 @@
+/* =========================================
+   settings.css - 환경설정 화면 스타일
+   ========================================= */
+.settings-layout { display: flex; gap: 22px; padding: 20px 0 40px; }
+.settings-side { border-right: 1px solid var(--line); }
+.settings-main { flex: 1; min-width: 0; }
+.settings-panel.hidden { display: none; }
+
+/* 프로필 배너 */
+.profile-hero { background: linear-gradient(90deg, #00c853, #16a34a); border-radius: 18px; box-shadow: 0 10px 26px rgba(0,0,0,0.06); padding: 22px; margin: 14px 0 18px; color: #fff; }
+.profile-hero__left { display: flex; align-items: center; gap: 16px; }
+.profile-hero__avatar { width: 74px; height: 74px; border-radius: 999px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; font-size: 34px; }
+.profile-hero__name { font-size: 26px; font-weight: 1000; letter-spacing: -0.3px; }
+.profile-hero__sub { margin-top: 6px; font-size: 14px; font-weight: 800; opacity: .95; }
+
+/* 정보 리스트 */
+.info-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+.info-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 12px; border-radius: 14px; background: #fff; }
+.info-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.info-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex: 0 0 auto; }
+.info-icon.is-blue { background: #eff6ff; color: #2563eb; }
+.info-icon.is-green { background: #ecfdf5; color: #16a34a; }
+.info-icon.is-purple { background: #f5f3ff; color: #7c3aed; }
+.info-icon.is-amber { background: #fff7ed; color: #f59e0b; }
+.info-value { margin-top: 2px; font-size: 15px; font-weight: 900; color: #0f172a; word-break: break-word; }
+.info-btn { border: 1px solid #cbd5e1; background: #fff; padding: 8px 12px; border-radius: 12px; font-weight: 900; cursor: pointer; }
+
+/* 계정 설정 */
+.setting-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.setting-item { width: 100%; text-align: left; border: 1px solid #e2e8f0; background: #fff; padding: 14px 14px; border-radius: 14px; cursor: pointer; }
+.setting-item:hover { background: #f8fafc; }
+.setting-title { font-size: 14px; font-weight: 1000; color: #0f172a; }
+.setting-sub { margin-top: 6px; font-size: 12px; font-weight: 800; color: #64748b; }
+.account-danger { border: 1px solid rgba(239,68,68,0.35); }
+.danger-box { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.danger-btn { width: 100%; border: 1px solid rgba(239,68,68,0.35); background: rgba(239,68,68,0.08); padding: 12px 14px; border-radius: 14px; font-weight: 1000; color: #dc2626; cursor: pointer; }
+.danger-btn.is-ghost { border-color: #e2e8f0; background: #f1f5f9; color: #0f172a; }
+
+/* 프로필 트리 */
+.tree-hero { background: #eafcf1; border-radius: 18px; border: 1px solid #bbf7d0; padding: 28px 18px; margin-top: 14px; }
+.tree-hero__badgeCircle { width: 140px; height: 140px; border-radius: 999px; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-size: 54px; box-shadow: 0 10px 26px rgba(0,0,0,0.06); }
+.tree-hero__level { position: absolute; right: 0; bottom: 6px; background: #00c853; color: #fff; padding: 10px 14px; border-radius: 999px; font-weight: 1000; font-size: 14px; box-shadow: 0 10px 26px rgba(0,0,0,0.08); }
+.tree-progress { margin: 18px auto 0; max-width: 520px; background: #fff; border-radius: 16px; padding: 14px 16px; border: 1px solid #e2e8f0; }
+.tree-progress__fill { display: block; height: 100%; border-radius: 999px; background: #00c853; }
+.tree-kpi__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.tree-kpi__card { background: #fff; border-radius: 16px; padding: 16px 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 26px rgba(0,0,0,0.03); }
+.tree-step { background: #ecfdf5; border: 2px solid #bbf7d0; border-radius: 16px; padding: 14px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.tree-step__btn { border: none; background: #00c853; color: #fff; border-radius: 999px; padding: 10px 14px; font-weight: 1000; cursor: pointer; }
+/* 현우 수정(추가) */
+.tree-progress__top{ font-size: 20px; }
+.tree-hero__title {
+    display: block;      /* 블록 요소로 변경 */
+    width: 100%;         /* 부모 너비를 꽉 채움 */
+    text-align: center;  /* 그 안에서 글자만 정중앙으로! */
+    /* 1. 폰트와 크기 */
+    font-size: 1.7rem;             /* 글자 크기를 시원하게 키우기 */
+    font-weight: 800;               /* 아주 두껍게 해서 존재감 뿜뿜 */
+    color: #2D3436;                /* 너무 검정색보다는 세련된 짙은 회색 */
+    
+    /* 2. 간격과 정렬 */
+    margin-bottom: 8px;            /* 아래 설명글과의 간격 */
+    letter-spacing: -0.5px;        /* 글자 사이 간격을 살짝 좁혀서 세련되게 */
+    
+    /* 3. 예쁜 폰트 적용 (눈누나 구글 폰트 추천) */
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    
+    /* 4. 살짝의 포인트 (선택 사항) */
+    display: inline-block;
+    position: relative;
+    text-align: center;  /* 그 안에서 글자만 정중앙으로! */
+}
+
+/* 텍스트 아래에 살짝 형광펜 느낌의 밑줄을 긋고 싶다면? */
+/*
+.tree-hero__title::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 8px;
+    background-color: rgba(76, 175, 80, 0.2); 
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    z-index: -1;
+}
+*/
+
+
+/* [추가] 뱃지 가출 방지용 울타리 */
+.tree-hero__badgeWrap {
+  position: relative;  /* ✨ 핵심: 자식(Lv.5)이 내 안에서만 움직이게 함 */
+  width: 140px;
+  height: 140px;
+  margin: 6px auto 10px;
+}

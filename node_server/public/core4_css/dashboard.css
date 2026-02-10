@@ -1,0 +1,71 @@
+/* =========================================
+   dashboard.css - 대시보드 화면 스타일
+   ========================================= */
+.dash {
+  display: grid; grid-template-columns: 260px 1fr; gap: 24px;
+  min-height: calc(100vh - 160px); background: #fff;
+}
+.dash__sidebar { border-right: 1px solid var(--line); }
+.dash__main { padding: 22px 26px; }
+.dash__h2 { margin: 18px 0 6px; font-size: 22px; font-weight: 900; }
+.dash__sub { margin: 0 0 18px; color: #64748b; font-weight: 700; }
+
+.msg { background: #16a34a; color: #fff; border-radius: 16px; padding: 18px; }
+.msg__title { font-weight: 900; font-size: 18px; margin-bottom: 8px; }
+.msg__text { font-weight: 700; opacity: .95; }
+
+.plant-card { border: 1px solid rgba(34,197,94,.35); border-radius: 16px; padding: 18px; display: flex; align-items: center; justify-content: space-between; }
+.plant-card__left { display: flex; gap: 14px; align-items: center; }
+.plant-card__icon { width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; background: rgba(34,197,94,.12); font-size: 28px; }
+.plant-card__name { font-size: 18px; font-weight: 900; }
+.plant-card__desc { margin-top: 4px; color: #64748b; font-weight: 700; }
+
+.dash__section-title { font-weight: 900; margin: 14px 0 12px; }
+
+/* 환경 데이터 그리드 */
+.metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.metric { border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.metric__label { font-weight: 900; color: #334155; }
+.metric__value { font-size: 24px; font-weight: 900; margin: 10px 0 12px; }
+.meter { height: 8px; border-radius: 999px; background: #eef2f7; overflow: hidden; }
+.meter > span { display: block; height: 100%; border-radius: 999px; transition: width 1s ease-out; /* 바가 슥~ 하고 부드럽게 차오르는 마법 ✨ */}
+
+/* 룸 카드 & 실시간 수치 */
+.room-card { border: 1px solid var(--line); border-radius: 18px; padding: 16px; }
+.room-card__plant { margin-top: 6px; display: inline-block; padding: 6px 10px; border-radius: 999px; font-weight: 900; background: rgba(34,197,94,.12); color: var(--green-600); }
+.room-grid { margin-top: 14px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.room-metric { border-radius: 16px; padding: 14px; background: #f8fafc; border: 1px solid var(--line); }
+.room-metric__label { font-weight: 900; color: #334155; }
+.room-metric__value { margin-top: 8px; font-size: 22px; font-weight: 900; }
+.room-metric__delta { margin-top: 6px; color: #64748b; font-weight: 800; font-size: 12px; }
+
+/* 환경 데이터 색상 */
+.metric--temp .meter > span { background: #ef4444; }
+.metric--hum .meter > span { background: #2563eb; }
+.metric--light .meter > span { background: #f59e0b; }
+.metric--soil .metric__icon { background: rgba(120, 113, 108, 0.12); color: #78716c; }
+.metric--soil .meter > span { background: #8d6e63; }
+
+.room-metric--temp { background: rgba(239, 68, 68, 0.08); border-left: 5px solid #ef4444; }
+.room-metric--temp .room-metric__value { color: #b91c1c; }
+.room-metric--hum { background: rgba(37, 99, 235, 0.08); border-left: 5px solid #2563eb; }
+.room-metric--hum .room-metric__value { color: #1d4ed8; }
+.room-metric--light { background: rgba(245, 158, 11, 0.10); border-left: 5px solid #f59e0b; }
+.room-metric--light .room-metric__value { color: #b45309; }
+.room-metric--water { background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.2); border-left: 5px solid #0ea5e9; }
+
+/* 식물 상세 모달 */
+.modal__panel--lg { width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 80px); display: flex; flex-direction: column; }
+.plant-detail__status { background: rgba(34,197,94,.10); border-radius: 14px; padding: 16px; margin-bottom: 18px; }
+.plant-detail__statusTitle { font-weight: 900; margin-bottom: 8px; }
+.plant-detail__statusText { font-weight: 800; color: #334155; }
+.plant-detail__grid { display: grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap: 14px; }
+.pd-card { border-radius: 16px; padding: 18px; border: 1px solid rgba(148,163,184,.35); text-align: center; background: #fff; }
+.pd-card__icon { width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 999px; display: grid; place-items: center; font-size: 22px; background: rgba(148,163,184,.12); }
+.pd-card__title { font-weight: 900; margin-bottom: 4px; }
+.pd-card__sub { color: #64748b; font-weight: 800; font-size: 13px; }
+.pd-card--blue { background: rgba(59,130,246,.08); border-color: rgba(59,130,246,.18); }
+.pd-card--yellow { background: rgba(250,204,21,.12); border-color: rgba(250,204,21,.22); }
+.pd-card--green { background: rgba(34,197,94,.10); border-color: rgba(34,197,94,.20); }
+.pd-card--purple { background: rgba(168,85,247,.08); border-color: rgba(168,85,247,.18); }
+.modal__footer { margin-top: auto; padding: 14px 18px 18px; border-top: 1px solid rgba(148,163,184,.25); background: #fff; }

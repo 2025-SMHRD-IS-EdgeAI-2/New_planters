@@ -1,0 +1,117 @@
+/* =========================================
+   report.css - 분석리포트 화면 스타일 (색상 누락 수정본)
+   ========================================= */
+
+/* 레이아웃 */
+.report-layout { display: flex; gap: 24px; padding: 22px 0 56px; }
+.report-side { border-right: 1px solid var(--line); }
+.report-main { flex: 1; min-width: 0; }
+.report-head__title { margin: 10px 0 6px; font-size: 26px; font-weight: 900; letter-spacing: -0.6px; }
+.report-head__sub { margin: 0 0 18px; color: var(--muted); font-weight: 800; }
+.report-panel.hidden { display: none; }
+
+/* 숙련도 배너 */
+.skill-banner { position: relative; display: flex; align-items: stretch; justify-content: space-between; border-radius: 18px; background: #05b64b; padding: 26px 26px; box-shadow: 0 10px 26px rgba(0,0,0,0.06); overflow: hidden; color: #fff; }
+.skill-banner__content { max-width: 720px; }
+.skill-badge { display: inline-flex; align-items: center; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,0.16); font-weight: 900; font-size: 13px; }
+.skill-score__num { font-size: 46px; font-weight: 900; letter-spacing: -1px; }
+.skill-bar { height: 12px; border-radius: 999px; background: rgba(255,255,255,0.22); overflow: hidden; margin: 10px 0 10px; }
+.skill-bar__fill { height: 100%; border-radius: 999px; background: rgba(255,255,255,0.92); }
+.trophy-circle { width: 120px; height: 120px; border-radius: 999px; background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center; }
+.trophy-emoji { font-size: 52px; }
+@media (max-width: 980px){
+  .skill-banner{ flex-direction: column; gap: 16px; }
+  .skill-banner__trophy{ justify-content:flex-start; }
+}
+
+/* 카드 공통 */
+.report-card { margin-top: 18px; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: 0 10px 26px rgba(0,0,0,0.06); padding: 18px; }
+.report-card__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.report-card__title { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: -0.3px; }
+
+/* ✨ [수정] 레벨 시스템 (점 색상 추가) */
+.level-list { display: flex; flex-direction: column; gap: 12px; }
+.level-item { display: flex; align-items: center; gap: 12px; border: 1px solid rgba(148,163,184,0.25); border-radius: 16px; padding: 14px 14px; position: relative; }
+.level-item.is-current { border-color: rgba(34,197,94,0.55); background: rgba(34,197,94,0.06); }
+
+.level-dot { width: 10px; height: 10px; border-radius: 999px; }
+.level-dot--gray { background: #64748b; }
+.level-dot--blue { background: #3b82f6; }   /* 추가됨 */
+.level-dot--purple { background: #a855f7; }
+.level-dot--gold { background: #f59e0b; }   /* 추가됨 */
+
+.level-info { min-width: 0; }
+.level-name { font-weight: 900; letter-spacing: -0.2px; }
+.level-range { margin-top: 4px; font-size: 12px; color: #64748b; font-weight: 800; }
+.level-badge { margin-left: auto; font-size: 12px; font-weight: 900; color: #fff; background: #16a34a; padding: 7px 10px; border-radius: 999px; }
+
+/* ✨ [수정] 세부 점수 막대 (색상 및 높이 복구) */
+.score-row { display: grid; grid-template-columns: 120px 1fr 88px; align-items: center; gap: 12px; }
+.score-label { font-weight: 900; color: #0f172a; }
+.score-bar { height: 10px; border-radius: 999px; background: rgba(148,163,184,0.22); overflow: hidden; }
+
+/* 막대 채우기 스타일 (높이 100% 필수!) */
+.score-fill { height: 100%; border-radius: 999px; }
+.score-fill--blue { background: #3b82f6; }
+.score-fill--green { background: #22c55e; }
+.score-fill--gold { background: #f59e0b; }
+.score-fill--purple { background: #a855f7; } /* 추가됨 */
+
+.score-num { text-align: right; font-weight: 900; color: #0f172a; }
+
+/* ✨ [수정] 업적 (잠김 상태 스타일 추가) */
+.ach-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.ach-card { border-radius: 16px; padding: 16px; border: 1px solid rgba(148,163,184,0.25); text-align: center; }
+.ach-icon { font-size: 30px; margin-bottom: 10px; }
+.ach-name { font-weight: 900; letter-spacing: -0.2px; }
+.ach-sub { margin-top: 6px; font-size: 12px; font-weight: 900; }
+
+.ach-card.is-done { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.35); }
+.ach-card.is-locked { opacity: 0.45; background: #f8fafc; } /* 추가됨 */
+
+/* 데이터 통계 그래프 */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 16px; }
+.stat-card { border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: 0 10px 26px rgba(0,0,0,0.06); padding: 18px 18px 16px; overflow: hidden; }
+.stat-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.stat-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-size: 20px; font-weight: 900; background: #f1f5f9; }
+.stat-title { font-weight: 900; letter-spacing: -0.2px; }
+.stat-sub { margin-top: 2px; font-size: 12px; color: #64748b; font-weight: 800; }
+.stat-chart { height: 170px; background: #f8fafc; border-radius: 14px; border: 1px solid rgba(148,163,184,0.25); }
+.stat-x { display: flex; justify-content: space-around; gap: 10px; margin-top: 10px; font-size: 12px; color: #94a3b8; font-weight: 800; }
+.stat-x--weeks { justify-content: space-between; padding: 0 6px; }
+.stat-x--weeks span { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.stat-x--weeks b { font-weight: 900; color: #0f172a; }
+.stat-x--weeks em { font-style: normal; font-size: 12px; color: #94a3b8; font-weight: 800; }
+
+.stat-summary { margin-top: 14px; border-radius: 14px; padding: 14px 16px; border: 1px solid rgba(148,163,184,0.25); display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; background: #f8fafc; }
+.sum-label { font-size: 12px; color: #64748b; font-weight: 900; margin-bottom: 6px; }
+.sum-value { font-size: 26px; font-weight: 900; letter-spacing: -0.4px; color: #0f172a; }
+.sum-right { text-align: right; }
+.sum-range { font-weight: 900; color: #0f172a; }
+.water-sums { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+.water-box { border-radius: 14px; padding: 14px 16px; border: 1px solid rgba(34,197,94,0.22); background: rgba(34,197,94,0.06); }
+
+/* 컬러 테마 */
+.stat-card--temp .stat-icon { background: rgba(239,68,68,0.12); }
+.stat-card--hum .stat-icon { background: rgba(37,99,235,0.12); }
+.stat-card--water .stat-icon { background: rgba(34,197,94,0.12); }
+.stat-card--light .stat-icon { background: rgba(245,158,11,0.14); }
+
+.stat-summary--temp { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); }
+.stat-summary--hum { background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.25); }
+.stat-summary--light { background: rgba(245,158,11,0.10); border-color: rgba(245,158,11,0.25); }
+
+/* 관리 습관 (Habit) */
+.habit-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 14px; }
+.habit-kpi { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 18px; box-shadow: 0 10px 26px rgba(0,0,0,0.06); display: flex; gap: 14px; }
+.habit-week { margin-top: 10px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 14px; align-items: end; padding: 18px 16px 6px; border-top: 1px solid #eef2f7; }
+.habit-bar { width: 100%; height: 140px; display: flex; flex-direction: row !important; align-items: flex-end; justify-content: center; gap: 4px; }
+.habit-bar .seg { display: block; width: 12px; border-radius: 4px 4px 2px 2px; transition: height 0.3s ease; }
+.habit-bar .seg.is-water { background: #2d7df6; }
+.habit-bar .seg.is-mist { background: #0ea5e9; }
+.habit-bar .seg.is-log { background: #a855f7; }
+.habit-legend { display: flex; gap: 18px; justify-content: center; align-items: center; padding: 14px 0 2px; border-top: 1px solid #e5e7eb; margin-top: 8px; }
+.legend-item .dot { width: 10px; height: 10px; border-radius: 4px; display: inline-block; }
+.insight-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+.insight { border-radius: 14px; padding: 14px 16px; border: 2px solid transparent; }
+.insight.is-green { background: #ecfdf5; border-color: #86efac; }

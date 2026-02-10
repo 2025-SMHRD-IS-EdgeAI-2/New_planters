@@ -1,0 +1,192 @@
+/* =========================================
+   common.css - 모든 페이지 공통 스타일
+   ========================================= */
+:root {
+  --green-600: #16a34a;
+  --green-700: #15803d;
+  --mint-50: #eafaf1;
+  --text: #0f172a;
+  --muted: #475569;
+  --line: #e5e7eb;
+  --shadow: 0 18px 40px rgba(0,0,0,.14);
+  --radius: 18px;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+html { overflow-y: scroll; } /* 스크롤 튀는 현상 방지 */
+body {
+  margin: 0;
+  font-family: "Noto Sans KR", sans-serif;
+  color: var(--text);
+  background: #fff;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* 유틸리티 */
+.hidden { display: none !important; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); border: 0;
+}
+.muted { color: #64748b; font-weight: 800; font-size: 12px; }
+.pill {
+  display: inline-block; margin-left: 8px; padding: 4px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 900;
+  background: rgba(34,197,94,.12); color: var(--green-600);
+}
+
+/* 상단 헤더 (Top & Nav) */
+.top { border-bottom: 1px solid var(--line); background: #fff; }
+.top__inner { height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: -0.3px; cursor: pointer; }
+.brand__mark { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 8px; color: var(--green-600); }
+.brand__name { font-size: 22px; }
+.top__right { display: flex; align-items: center; gap: 14px; }
+.link-btn { border: none; background: transparent; font-weight: 600; color: #111827; cursor: pointer; padding: 8px 4px; }
+
+.nav { background: #fff; border-bottom: 1px solid var(--line); }
+.nav__inner { height: 52px; display: flex; align-items: flex-end; gap: 34px; }
+.nav__item { position: relative; display: inline-block; padding: 14px 2px 12px; font-weight: 600; color: #1f2937; text-decoration: none; cursor: pointer; }
+.nav__item--active { color: var(--green-600); }
+.nav__item--active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; border-radius: 999px; background: var(--green-600); }
+
+/* 버튼 (Buttons) */
+.btn { border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; border: 1px solid transparent; }
+.btn--lg { padding: 12px 22px; border-radius: 12px; }
+.btn--solid { background: var(--green-600); color: #fff; }
+.btn--solid:hover { background: var(--green-700); }
+.btn--outline { background: transparent; color: var(--green-600); border-color: var(--green-600); }
+.btn--outline:hover { background: rgba(22,163,74,.08); }
+.btn--ghost { border: 1px solid var(--line); background: #fff; padding: 10px 14px; border-radius: 12px; font-weight: 900; cursor: pointer; }
+.btn--full { width: 100%; }
+
+/* 모달 (Modal) & 폼 (Form) */
+.modal { position: fixed; inset: 0; z-index: 1000; }
+.modal__backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(2px); }
+.modal__panel { position: relative; width: min(520px, calc(100vw - 32px)); margin: 10vh auto 0; background: #fff; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,.25); overflow: hidden; animation: modalIn .18s ease-out; }
+.modal__header { display: flex; align-items: center; justify-content: space-between; padding: 18px; border-bottom: 1px solid var(--line); }
+.modal__title { margin: 0; font-size: 18px; font-weight: 800; }
+.modal__close { border: none; background: transparent; cursor: pointer; font-size: 18px; line-height: 1; padding: 8px; border-radius: 10px; }
+.modal__close:hover { background: rgba(15, 23, 42, 0.06); }
+.modal__body { padding: 18px; }
+@keyframes modalIn { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.field { display: block; margin-bottom: 12px; }
+.field__label { display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px; }
+.field__input { width: 100%; height: 44px; border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; outline: none; }
+.field__input:focus { border-color: #cbd5e1; box-shadow: 0 0 0 3px rgba(22,163,74,.12); }
+.form-alert { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; background: rgba(220, 38, 38, 0.10); border: 1px solid rgba(220, 38, 38, 0.25); color: #b91c1c; }
+.form-alert--success { background: rgba(22, 163, 74, 0.10); border: 1px solid rgba(22, 163, 74, 0.25); color: #15803d; }
+
+/* 공통 사이드 메뉴 스타일 (대시보드, 성장기록 등에서 공용) */
+.side-menu { display: flex; flex-direction: column; gap: 8px; }
+.side-menu__item { width: 100%; text-align: left; padding: 14px 20px; border-radius: 12px; border: none; background: transparent; font-size: 16px; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.2s; }
+.side-menu__item:hover { background: #f1f5f9; color: #0f172a; }
+.side-menu__item.is-active { background: var(--green-600) !important; color: #fff !important; font-weight: 800; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25); }
+
+/* 공통 레이아웃 구조 */
+.dash, .layout, .report-layout, .settings-layout { padding-top: 24px !important; }
+.dash__sidebar, .side, .report-side, .settings-side { padding: 28px 18px 0 !important; width: 260px; flex-shrink: 0; }
+.dash__title, .side__title, .report-side__title, .settings-side__title { margin-top: 0 !important; padding-left: 0 !important; margin-bottom: 14px !important; font-size: 18px; font-weight: 900; }
+
+/* =================================================
+   [진짜_최종] 모든 페이지 '전체 여백' 강제 통일 (28px)
+   ================================================= */
+
+/* 1. 페이지 전체 틀(Layout)의 양옆 여백을 28px로 고정 */
+/* 분석리포트와 환경설정이 밖으로 나가는 현상 해결! */
+.dash,
+.layout,
+.report-layout,
+.settings-layout {
+  padding-left: 28px !important;  /* ✨ 왼쪽 여백 강제 주입 */
+  padding-right: 28px !important; /* ✨ 오른쪽 여백 강제 주입 */
+  box-sizing: border-box;         /* 여백 포함해서 크기 계산 */
+}
+
+/* 2. 사이드바 내부 여백은 0으로 (이미 1번에서 띄웠으니까) */
+.dash__sidebar,
+.side,
+.report-side,
+.settings-side {
+  padding-left: 0 !important;  /* 내부 들여쓰기 제거 */
+  margin-left: 0 !important;
+  width: 260px;
+  flex-shrink: 0;
+  
+  /* 높이 맞춤 (분석리포트 기준) */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* 3. 제목 위치 고정 */
+.dash__title,
+.side__title,
+.report-side__title,
+.settings-side__title {
+  margin-top: 10px !important;
+  margin-bottom: 14px !important;
+  padding-left: 0 !important;
+}
+
+/* 4. 대시보드 오른쪽 선 유지 */
+.dash__sidebar {
+  border-right: 1px solid var(--line) !important;
+  padding-right: 18px !important; /* 선과 글자 사이 간격 */
+}
+
+/* 다른 사이드바들도 오른쪽 간격 통일 */
+.side, .report-side, .settings-side {
+  padding-right: 18px !important;
+  border-right: 1px solid var(--line) !important;
+}
+
+/* =========================================
+   [추가] 로그인 잠금 모드 (Blur Effect)
+   ========================================= */
+/* 잠금이 걸릴 페이지의 기준점 */
+.page { 
+  position: relative; /* 오버레이가 이 안에 갇히도록 설정 */
+}
+
+/* 화면을 덮는 반투명 유리창 (여기가 핵심!) */
+.lock-overlay {
+  position: absolute;
+  inset: 0; /* 상하좌우 꽉 채우기 */
+  z-index: 50; /* 콘텐츠 위에 뜸 */
+  
+  /* 배경을 흐릿하게 만드는 마법의 주문 ✨ */
+  backdrop-filter: blur(10px); 
+  -webkit-backdrop-filter: blur(10px); /* 사파리 호환 */
+  background: rgba(255, 255, 255, 0.4); /* 살짝 흰색 틴트 */
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 중앙에 뜨는 안내 메시지 박스 */
+.lock-msg-box {
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  border: 1px solid rgba(0,0,0,0.05);
+  animation: floatUp 0.3s ease-out;
+}
+
+.lock-icon { font-size: 48px; margin-bottom: 16px; display: block; }
+.lock-title { font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 8px; }
+.lock-desc { color: #64748b; margin: 0 0 24px; line-height: 1.5; }
+
+@keyframes floatUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

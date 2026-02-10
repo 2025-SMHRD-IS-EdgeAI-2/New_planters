@@ -1,0 +1,116 @@
+/* =========================================
+   growth.css - 성장기록 화면 스타일 (수정본)
+   ========================================= */
+
+/* 레이아웃 */
+.layout { display: grid; grid-template-columns: 260px 1fr; gap: 28px; min-height: calc(100vh - 160px); background: #fff; }
+.side { border-right: 1px solid var(--line); }
+.content { flex: 1; padding: 26px 34px; }
+
+.growth-panel { display: none; }
+.growth-panel.active { display: block; }
+
+/* =========================================
+   [추가] 페이지 제목 & 부제목 스타일 (분석 리포트와 통일)
+   ========================================= */
+.growth-panel h2 {
+  margin: 10px 0 6px;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.6px;
+  color: #0f172a;
+}
+
+.growth-panel .sub {
+  margin: 0 0 18px;
+  color: #475569; /* 진한 회색 (var(--muted)) */
+  font-weight: 800; /* 두께감 있게 */
+  font-size: 16px;
+}
+
+/* 타임랩스 카드 */
+#growth-timelapse { max-width: 640px; }
+.timelapse-card--v2 { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 10px 26px rgba(0,0,0,0.06); }
+
+/* ✨ [수정] 썸네일 영역 & 식물 아이콘 스타일 추가 */
+.timelapse-thumb { 
+  position: relative; 
+  height: 480px; 
+  background: #a7cdb5; 
+  display: grid; 
+  place-items: center; 
+}
+
+/* ✨ [추가됨] 식물 아이콘 (이게 빠져서 안 보였어요!) */
+.timelapse-icon {
+  font-size: 96px;
+  line-height: 1;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 재생 버튼 */
+.thumb-play { 
+  width: 64px; height: 64px; 
+  border-radius: 999px; 
+  border: 2px solid rgba(255,255,255,0.85); 
+  background: rgba(255,255,255,0.92); 
+  cursor: pointer; 
+  font-size: 22px; 
+  position: absolute; 
+  left: 50%; top: 50%; 
+  transform: translate(-50%, -50%); 
+  z-index: 2; 
+  display: grid; 
+  place-items: center; 
+}
+.thumb-play:hover { transform: translate(-50%, -50%) scale(1.06); }
+
+/* 타임랩스 정보 영역 */
+.timelapse-info { padding: 16px; }
+.timelapse-title { display: block; font-size: 18px; font-weight: 900; margin-bottom: 8px; }
+.timelapse-date { display: flex; align-items: center; gap: 8px; color: #64748b; font-weight: 800; font-size: 13px; margin-bottom: 12px; }
+.timelapse-input { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 8px; padding: 6px 10px; font-family: inherit; font-size: 14px; color: #334155; outline: none; cursor: pointer; transition: all 0.2s; }
+#timelapse-screen img { transition: none !important; /* 애니메이션 절대 금지! */ border-radius: 12px; object-fit: cover; }
+.timelapse-meta { display: grid; gap: 8px; margin-bottom: 14px; }
+.meta-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.meta-label { color: #64748b; font-weight: 800; }
+.meta-value { font-weight: 900; color: #0f172a; }
+
+/* 성장 히스토리 (그래프) */
+#growth-history { max-width: 920px; }
+.gh-kpi { display: flex; gap: 14px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; box-shadow: 0 10px 26px rgba(0,0,0,0.06); max-width: 420px; }
+.gh-kpi__icon { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: rgba(34,197,94,0.12); color: var(--green-600); font-size: 22px; }
+.gh-kpi__value { font-size: 28px; font-weight: 900; margin-bottom: 6px; }
+
+.gh-card { margin-top: 18px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px 20px; box-shadow: 0 10px 26px rgba(0,0,0,0.06); }
+.gh-card__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.gh-card__title { display: flex; align-items: center; gap: 10px; font-weight: 900; }
+.gh-chart__area { height: 140px; background: #f8fafc; border-radius: 14px; border: 1px solid rgba(148,163,184,0.25); }
+.gh-chart__x { display: flex; justify-content: space-around; gap: 10px; margin-top: 10px; font-size: 12px; color: #94a3b8; font-weight: 700; }
+
+/* 타임라인 (오늘의 카드 & 리스트) */
+.today-card--v2 { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; background: #16a34a; color: #fff; padding: 26px 28px; border-radius: 18px; margin: 18px 0 22px; }
+.today-card__title { margin: 0 0 10px; font-size: 22px; font-weight: 900; }
+.today-card__mood { width: 68px; height: 68px; border-radius: 999px; background: rgba(255,255,255,0.16); display: grid; place-items: center; font-size: 34px; border: 3px solid rgba(0,0,0,0.85); }
+.today-card .btn--solid { background: #fff; color: var(--green-700); }
+.today-card .btn--outline { border-color: #fff; color: #fff; }
+
+.timeline--cards { display: flex; flex-direction: column; gap: 18px; }
+.tcard { background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 10px 26px rgba(0,0,0,0.06); }
+.tcard__bar { height: 6px; }
+.tcard__row { display: flex; gap: 14px; padding: 16px 18px; align-items: flex-start; }
+.tcard__icon { width: 46px; height: 46px; border-radius: 999px; display: grid; place-items: center; background: #f1f5f9; font-size: 22px; flex: 0 0 auto; }
+.tcard__meta { display: flex; gap: 10px; align-items: center; font-weight: 900; margin-bottom: 8px; }
+.tcard__tag { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: #f1f5f9; color: #334155; font-weight: 900; }
+.tcard--green .tcard__bar { background: #22c55e; }
+.tcard--blue .tcard__bar { background: #3b82f6; }
+.tcard--purple .tcard__bar { background: #a855f7; }
+
+/* 사진/메모 모달 */
+.upload__box { position: relative; border: 2px dashed var(--line); border-radius: 14px; padding: 22px; text-align: center; background: #fff; }
+.upload__icon { width: 54px; height: 54px; border-radius: 999px; display: grid; place-items: center; margin: 0 auto 10px; background: rgba(34,197,94,12); color: var(--green-600); font-weight: 900; }
+.upload__input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.mood { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 0 4px; }
+.mood__btn { width: 52px; height: 52px; border-radius: 14px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-size: 22px; }
+.mood__btn.is-active { border-color: rgba(34,197,94,55); box-shadow: 0 0 0 3px rgba(22,163,74,12); }
