@@ -15,7 +15,7 @@ let chartInstances = {};
 let lastLoadTime = 0;
 
 /* ====================================================================
-   1. UI Helpers (화면 동작 관련 - 프론트엔드 영역)
+        UI Helpers (화면 동작 관련 - 프론트엔드 영역)
    ==================================================================== */
 
 function openModal(modalId) {
@@ -159,7 +159,7 @@ if (e.target.id === 'btn-logout' || e.target.id === 'header-btn-logout') {
 
 
 /* ====================================================================
-   2. Page Navigation & Demo Mode
+       Page Navigation & Demo Mode
    ==================================================================== */
 
 function showPage(pageId) {
@@ -356,8 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
           openPlantDetail(); // 모달 데이터를 채우는 함수 호출!
       });
   }
-
-  // 7. 대시보드 새로고침
+  // 8. 대시보드 새로고침
   refreshDashboard();
 });
 
@@ -375,27 +374,17 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// 초기화 설정 (범수)
-// document.addEventListener('DOMContentLoaded', () => {
-//   showPage('page-home');
-//   setActiveNav('home');
-//   console.log("🌿 GreenSync Front-end Ready.");
+// ========================================================
+//                       1. 홈화면
+// ========================================================
 
-//   // ⚠️ [BACKEND TODO] : 세션 확인 후 로그인 상태 유지
-//   // fetch('/api/session')...
-// });
-
-/* ====================================================================
-   4. [BACKEND] 인증 관련 로직
-   ==================================================================== */
-
-// 🔐 로그인 처리 (최종 개선본)
+// ===============    1-1. 로그인 페이지     ================
+// 로그인 처리
 document.addEventListener('submit', async (e) => {
   const formId = e.target.id;
 
   if (formId === 'login-form') {
     e.preventDefault(); // 기본 동작 막기
-    
     const email = document.getElementById('login-email')?.value;
     const pw = document.getElementById('login-pass')?.value;
 
@@ -410,23 +399,19 @@ document.addEventListener('submit', async (e) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, pw })
       });
-
       const result = await res.json();
 
       if (result.success) {
         // 로그인 성공 시 정보 저장
         localStorage.setItem('userEmail', email);
-        localStorage.setItem('isLoggedIn', 'true');
-        
+        localStorage.setItem('isLoggedIn', 'true');        
         // 전역 상태 업데이트
         isLoggedIn = true; 
-        
         alert(`${email}님, 반갑습니다! 🌿`);
-        
         closeAnyOpenModal(); // 모달 닫기
         updateHeaderToLoggedIn(); // 헤더 UI 변경
         
-        // 🪴 식물 정보가 있다면 렌더링
+        // 식물 정보가 있다면 렌더링
         if (typeof checkAndRenderPlantUI === 'function') {
           await checkAndRenderPlantUI(email);
         }
@@ -446,17 +431,10 @@ document.addEventListener('submit', async (e) => {
   }
 });
 
-// // 🔐 회원가입 처리 (범수)
-// document.addEventListener('submit', (e) => {
-//   if (e.target && e.target.id === 'signup-form') {
-//     e.preventDefault();
-//     // ⚠️ [BACKEND TODO] : 회원가입 API 호출
-//     alert('회원가입 버튼 동작! (API 연결 필요)');
-//     closeAnyOpenModal();
-//   }
-// });
-
-// 🔐 [교체] 회원가입 처리 (실제 API 연결)
+// ========================================================
+// ==============    1-2. 회원가입 페이지     ===============
+// ========================================================
+// 회원가입 처리
 document.addEventListener('submit', async (e) => { // async 잊지 말고!
   if (e.target && e.target.id === 'signup-form') {
     e.preventDefault();
@@ -511,101 +489,11 @@ document.addEventListener('submit', async (e) => { // async 잊지 말고!
   }
 });
 
-// 🔐 비밀번호 찾기
-document.addEventListener('submit', (e) => {
-  if (e.target && e.target.id === 'forgot-form') {
-    e.preventDefault();
-    // ⚠️ [BACKEND TODO] : 비밀번호 찾기 API
-    alert('임시: 비밀번호 찾기 요청');
-    closeAnyOpenModal();
-  }
-});
+// ========================================================
+//                    2. 성장 분석
+// ========================================================
 
-
-
-
-/* ====================================================================
-   5. [BACKEND] 데이터 관리 로직
-   ==================================================================== */
-
-// 🌿 반려식물 등록/수정
-// 🌿 반려식물 등록 처리 (전체 로직)
-document.addEventListener('submit', async (e) => {
-  if (e.target && e.target.id === 'plant-form') {
-    e.preventDefault();
-
-    const email = localStorage.getItem('userEmail');
-    const plantName = document.getElementById('plant-name')?.value; // 모달 안의 input ID
-    const plantSpecies = document.getElementById('plant-species')?.value;
-    const plantDate = document.getElementById('plant-date')?.value;
-
-    try {
-      const res = await fetch("http://192.168.219.197:3001/api/plants/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plantName, plantSpecies, plantDate, email })
-      });
-
-      const result = await res.json();
-
-      if (result.success) {
-        alert('식물 등록 완료!');
-        closeAnyOpenModal(); // 모달 닫고
-
-        // ✨ 바로 여기서 다시 UI를 체크하는 거야!
-        // 이 함수가 돌면서 'hidden'을 지우고 새로 등록된 이름을 넣어줄 거야.
-        await checkAndRenderPlantUI(email); 
-        
-      } else {
-        alert('등록 실패: ' + result.message);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
-});
-
-// 🌿 반려식물 삭제 처리 (core4_jss.js)
-const btnPlantDelete = document.getElementById('btn-plant-delete');
-
-if (btnPlantDelete) {
-  btnPlantDelete.addEventListener('click', async () => {
-    const email = localStorage.getItem('userEmail'); // 누구 식물인지 알아야 하니까!
-
-    if (!email) {
-      alert("로그인 정보가 없음");
-      return;
-    }
-
-    if (confirm('정말 이 반려식물을 삭제하시겠습니까?\n모든 성장 기록이 사라집니다.')) {
-      try {
-        // 1. 서버에 삭제 요청 (DELETE 방식)
-        const res = await fetch(`http://192.168.219.197:3001/api/plants/${email}`, {
-          method: "DELETE"
-        });
-        const result = await res.json();
-
-        if (result.success) {
-          alert('식물이 삭제되었습니다.');
-
-          // 2. 화면 갱신 (비서 함수를 다시 불러서 '없음' 화면으로 돌리기)
-          if (typeof checkAndRenderPlantUI === 'function') {
-            await checkAndRenderPlantUI(email);
-          }
-        } else {
-          alert('삭제 실패: ' + result.message);
-        }
-      } catch (err) {
-        console.error("삭제 통신 에러:", err);
-        alert("서버와 연결할 수 없음");
-      }
-    }
-  });
-}
-
-
-// ============== 식물상태 상세정보 모달 시작 ==============
-
+// ===========    2-1. 식물상태 상세정보 모달    =============
 async function openPlantDetail() {
     try {
         // 1. 우리가 만든 쿼리 주소로 요청!
@@ -653,12 +541,10 @@ async function openPlantDetail() {
         alert("데이터를 불러오는 데 문제가 생겼어, 친구야!");
     }
 }
-// ============== 식물상태 상세정보 모달 끝 ==============
 
-
-
-// ============== 환경 데이터 페이지 시작 ==============
-
+// ========================================================
+// ==============    2-2. 환경 데이터 페이지    ==============
+// ========================================================
 // 실시간 환경 데이터 (가장 최근)
 // 1. 서버에서 최신 데이터를 가져와서 화면을 고치는 함수
 async function refreshDashboard() {
@@ -757,10 +643,12 @@ async function loadAverageStats() {
     }
 }
 
-// ============== 환경 데이터 페이지 끝 ==============
+// ========================================================
+//                    3. 성장 분석
+// ========================================================
 
+// ============    3-1. 타임랩스 페이지 시작    ==============
 
-// ============== 타임랩스 페이지 시작 ==============
 // timelapse-action클래스의 btn클래스를 찾아줘 -> 그리고 선언
 const btnTimelapsePlay = document.querySelector('.timelapse-actions .btn');
 
@@ -865,189 +753,10 @@ function runTimelapse(images) {
     index++;
   }, 50); // 속도 조절: 500은 0.5초, 100으로 하면 0.1초
 }
-// ============== 타임랩스 페이지 끝 ==============
 
-
-
-
-
-// // 사용자 정보 수정
-// document.addEventListener('submit', (e) => {
-//   const id = e.target.id;
-//   if (['form-edit-name', 'form-edit-phone', 'form-edit-address', 'form-edit-email'].includes(id)) {
-//     e.preventDefault();
-//     // ⚠️ [BACKEND TODO] : 사용자 프로필 업데이트 API
-//     alert('성공적으로 수정되었습니다! (API 연결 필요)');
-//     closeAnyOpenModal();
-//     e.target.reset();
-//   }
-// });
-
-// // 🔐 비밀번호 변경
-// document.addEventListener('submit', (e) => {
-//   if (e.target && e.target.id === 'password-form') {
-//     e.preventDefault();
-//     const newPw = document.getElementById('new-pw').value;
-//     const confirmPw = document.getElementById('confirm-pw').value;
-
-//     if (newPw.length < 4) { alert('비밀번호는 4자 이상이어야 합니다.'); return; }
-//     if (newPw !== confirmPw) { alert('새 비밀번호가 일치하지 않습니다.'); return; }
-
-//     // ⚠️ [BACKEND TODO] : 비밀번호 변경 API
-//     alert('비밀번호가 성공적으로 변경되었습니다!');
-//     closeAnyOpenModal();
-//     e.target.reset();
-//   }
-// });
-
-
-// 나의 정보 페이지
-async function renderUserProfile(email) {
-  if (!email) return;
-
-  try {
-    console.log(email)
-    const res = await fetch(`http://192.168.219.197:3001/api/user/profile/${email}`);
-    const result = await res.json();
-    
-    if (result.success) {
-      // 1. HTML에서 이름과 이메일이 들어갈 위치를 찾아 (ID는 네 HTML에 맞게 수정해!)
-      const heroNameEl = document.querySelector('.profile-hero__name');
-      const nameEl = document.getElementById('profile-name');
-      const emailEl = document.getElementById('profile-email');
-      const dateEl = document.getElementById('profile-date');
-
-      // 2. 서버에서 받은 진짜 데이터로 갈아끼우기
-      if (heroNameEl) heroNameEl.textContent = `${result.userName}님`;
-      if (nameEl) nameEl.textContent = result.userName;
-      if (emailEl) emailEl.textContent = result.email;
-      const date= result.createAt.split('T')[0]; // 표준시 형식 > 날짜형식으로 치환
-      if (dateEl) dateEl.textContent = `가입일 : ${date}`;
-
-      console.log("프로필 업데이트 완료:", result.userName);
-    }
-  } catch (err) {
-    console.error("프로필 로딩 실패:", err);
-  }
-}
-
-// 데이터 통계 페이지
-async function loadStatistics() {
-    try {
-      // 금고(localStorage)에서 이메일 꺼내기
-      const userEmail = localStorage.getItem('userEmail'); 
-        
-      if (!userEmail) {
-        console.log("로그인 정보가 없습니다.");
-        return;
-        }
-      // 1. 노드 서버에 분석 데이터 요청!
-
-      // URL 뒤에 ?email=... 을 붙여서 전송
-      const response = await fetch(`http://192.168.219.197:3001/api/stats?email=${userEmail}`, {
-        method: 'GET'
-      });
-        
-      const result = await response.json();
-
-      if (result.success) {
-        const data = result.data;
-        const analysis = data.analysis;
-
-      // 하단 수치 업데이트
-      document.getElementById('avg-temp').innerText = `${analysis.avg_temp}°C`;
-      document.getElementById('avg-hum').innerText = `${analysis.avg_hum}%`;
-      document.getElementById('avg-light').innerText = `${analysis.avg_light} lux`;
-      document.getElementById('water-avg-interval').innerText = `${analysis.water_avg_interval}일`;
-      document.getElementById('water-total-month').innerText = `${analysis.water_total_month}회`;
-
-      // // 그래프 그리기
-      renderLineChart('tempChart', data.labels, data.temp_data, '#ff6384', '온도(°C)');
-      renderLineChart('humChart', data.labels, data.hum_data, '#36a2eb', '습도(%)');
-      renderLineChart('lightChart', data.labels, data.light_data, '#ffcd56', '조도(lux)');
-      renderBarChart('waterWeeklyChart', analysis.water_weekly);
-    }
-  } catch (error) {
-    console.error("데이터 로드 실패:", error);
-  }
-}
-
-// 그래프 그리는 함수
-function renderLineChart(canvasId, labels, chartData, color, labelName) {
-    const canvas = document.getElementById(canvasId);
-    if(!canvas) return; // 💡 캔버스가 없으면 건너뛰는 안전장치
-
-    const ctx = canvas.getContext('2d');
-    if (chartInstances[canvasId]) {
-        chartInstances[canvasId].destroy();
-    }
-
-    chartInstances[canvasId] = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: labelName,
-                data: chartData,
-                borderColor: color,
-                backgroundColor: color + '33', 
-                fill: true,
-                tension: 0.4 
-            }]
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, // 💡 부모 컨테이너 크기에 맞춤
-            scales: { y: { beginAtZero: false } } 
-        }
-    });
-}
-
-function renderBarChart(canvasId, weeklyData) {
-    const canvas = document.getElementById(canvasId);
-    if(!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (chartInstances[canvasId]) {
-        chartInstances[canvasId].destroy();
-    }
-    const labels = weeklyData.map(d => d.label);
-    const values = weeklyData.map(d => d.value);
-
-    chartInstances[canvasId] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: weeklyData.map(d => d.label),
-            datasets: [{
-                label: '물주기 횟수',
-                data: weeklyData.map(d => d.value),
-                backgroundColor: '#4bc0c0'
-            }]
-        },
-        options: { 
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        // 💡 핵심: 눈금 간격을 1로 고정!
-                        stepSize: 1,
-                        // 소수점을 아예 안 나오게 정수로 포맷팅
-                        callback: function(value) {
-                            if (Math.floor(value) === value) {
-                                return value;
-                            }
-                        }
-                    }
-                  }
-              }
-        }
-    });
-}
-
-
-// =============== 성장 히스토리 시작 ===============
+// =========================================================
+// ============    3-2. 성장 히스토리 페이지     ==============
+// =========================================================
 // 사이드 메뉴 클릭으로 초기화
 const sideMenuItems = document.querySelectorAll('.side-menu__item');
 sideMenuItems.forEach(item => {
@@ -1139,16 +848,18 @@ async function initGrowthDashboard(email) {
         });
 
     } catch (err) {
-        console.error("대시보드 로딩 실패:", err);
+        console.error("로딩 실패:", err);
     }
 }
 
 // 페이지 로드 시 실행 (로그인된 이메일 사용)
 const userEmail = localStorage.getItem('userEmail');
 initGrowthDashboard(userEmail);
-// =============== 성장 히스토리 끝 ===============
 
-// =============== 성장 다이어리 시작 ===============
+// ======================================================
+// ============    3-3. 타임라인 페이지     ===============
+// ======================================================
+
 // 1. 파일 이름 표시 및 기분 선택 이벤트 (추가)
 document.addEventListener('change', (e) => {
     if (e.target.id === 'diary-file') {
@@ -1287,7 +998,289 @@ function getRelativeTime(dateString) {
 }
 
 
-// 함수 추가
+// ========================================================
+//                    4. 분석 리포트
+// ========================================================
+
+// ==========    4-1. 식집사 숙련도 점수 페이지     ===========
+
+
+
+
+// ========================================================
+// =============    4-2. 데이터 통계 페이지     ==============
+// ========================================================
+async function loadStatistics() {
+    try {
+      // 금고(localStorage)에서 이메일 꺼내기
+      const userEmail = localStorage.getItem('userEmail'); 
+        
+      if (!userEmail) {
+        console.log("로그인 정보가 없습니다.");
+        return;
+        }
+      // 1. 노드 서버에 분석 데이터 요청!
+
+      // URL 뒤에 ?email=... 을 붙여서 전송
+      const response = await fetch(`http://192.168.219.197:3001/api/stats?email=${userEmail}`, {
+        method: 'GET'
+      });
+        
+      const result = await response.json();
+
+      if (result.success) {
+        const data = result.data;
+        const analysis = data.analysis;
+
+      // 하단 수치 업데이트
+      document.getElementById('avg-temp').innerText = `${analysis.avg_temp}°C`;
+      document.getElementById('avg-hum').innerText = `${analysis.avg_hum}%`;
+      document.getElementById('avg-light').innerText = `${analysis.avg_light} lux`;
+      document.getElementById('water-avg-interval').innerText = `${analysis.water_avg_interval}일`;
+      document.getElementById('water-total-month').innerText = `${analysis.water_total_month}회`;
+
+      // // 그래프 그리기
+      renderLineChart('tempChart', data.labels, data.temp_data, '#ff6384', '온도(°C)');
+      renderLineChart('humChart', data.labels, data.hum_data, '#36a2eb', '습도(%)');
+      renderLineChart('lightChart', data.labels, data.light_data, '#ffcd56', '조도(lux)');
+      renderBarChart('waterWeeklyChart', analysis.water_weekly);
+    }
+  } catch (error) {
+    console.error("데이터 로드 실패:", error);
+  }
+}
+
+// 그래프 그리는 함수
+function renderLineChart(canvasId, labels, chartData, color, labelName) {
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return; // 💡 캔버스가 없으면 건너뛰는 안전장치
+
+    const ctx = canvas.getContext('2d');
+    if (chartInstances[canvasId]) {
+        chartInstances[canvasId].destroy();
+    }
+
+    chartInstances[canvasId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: labelName,
+                data: chartData,
+                borderColor: color,
+                backgroundColor: color + '33', 
+                fill: true,
+                tension: 0.4 
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, // 💡 부모 컨테이너 크기에 맞춤
+            scales: { y: { beginAtZero: false } } 
+        }
+    });
+}
+
+function renderBarChart(canvasId, weeklyData) {
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (chartInstances[canvasId]) {
+        chartInstances[canvasId].destroy();
+    }
+    const labels = weeklyData.map(d => d.label);
+    const values = weeklyData.map(d => d.value);
+
+    chartInstances[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: weeklyData.map(d => d.label),
+            datasets: [{
+                label: '물주기 횟수',
+                data: weeklyData.map(d => d.value),
+                backgroundColor: '#4bc0c0'
+            }]
+        },
+        options: { 
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        // 💡 핵심: 눈금 간격을 1로 고정!
+                        stepSize: 1,
+                        // 소수점을 아예 안 나오게 정수로 포맷팅
+                        callback: function(value) {
+                            if (Math.floor(value) === value) {
+                                return value;
+                            }
+                        }
+                    }
+                  }
+              }
+        }
+    });
+}
+
+
+
+// ========================================================
+//                      5. 환경 설정
+// ========================================================
+// 나의 정보 페이지
+async function renderUserProfile(email) {
+  if (!email) return;
+
+  try {
+    console.log(email)
+    const res = await fetch(`http://192.168.219.197:3001/api/user/profile/${email}`);
+    const result = await res.json();
+    
+    if (result.success) {
+      // 1. HTML에서 이름과 이메일이 들어갈 위치를 찾아 (ID는 네 HTML에 맞게 수정해!)
+      const heroNameEl = document.querySelector('.profile-hero__name');
+      const nameEl = document.getElementById('profile-name');
+      const emailEl = document.getElementById('profile-email');
+      const dateEl = document.getElementById('profile-date');
+
+      // 2. 서버에서 받은 진짜 데이터로 갈아끼우기
+      if (heroNameEl) heroNameEl.textContent = `${result.userName}님`;
+      if (nameEl) nameEl.textContent = result.userName;
+      if (emailEl) emailEl.textContent = result.email;
+      const date= result.createAt.split('T')[0]; // 표준시 형식 > 날짜형식으로 치환
+      if (dateEl) dateEl.textContent = `가입일 : ${date}`;
+
+      console.log("프로필 업데이트 완료:", result.userName);
+    }
+  } catch (err) {
+    console.error("프로필 로딩 실패:", err);
+  }
+}
+
+// 🌿 반려식물 등록/수정
+// 🌿 반려식물 등록 처리 (전체 로직)
+document.addEventListener('submit', async (e) => {
+  if (e.target && e.target.id === 'plant-form') {
+    e.preventDefault();
+
+    const email = localStorage.getItem('userEmail');
+    const plantName = document.getElementById('plant-name')?.value; // 모달 안의 input ID
+    const plantSpecies = document.getElementById('plant-species')?.value;
+    const plantDate = document.getElementById('plant-date')?.value;
+
+    try {
+      const res = await fetch("http://192.168.219.197:3001/api/plants/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plantName, plantSpecies, plantDate, email })
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        alert('식물 등록 완료!');
+        closeAnyOpenModal(); // 모달 닫고
+
+        // ✨ 바로 여기서 다시 UI를 체크하는 거야!
+        // 이 함수가 돌면서 'hidden'을 지우고 새로 등록된 이름을 넣어줄 거야.
+        await checkAndRenderPlantUI(email); 
+        
+      } else {
+        alert('등록 실패: ' + result.message);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+});
+
+// 🌿 반려식물 삭제 처리 (core4_jss.js)
+const btnPlantDelete = document.getElementById('btn-plant-delete');
+
+if (btnPlantDelete) {
+  btnPlantDelete.addEventListener('click', async () => {
+    const email = localStorage.getItem('userEmail'); // 누구 식물인지 알아야 하니까!
+
+    if (!email) {
+      alert("로그인 정보가 없음");
+      return;
+    }
+
+    if (confirm('정말 이 반려식물을 삭제하시겠습니까?\n모든 성장 기록이 사라집니다.')) {
+      try {
+        // 1. 서버에 삭제 요청 (DELETE 방식)
+        const res = await fetch(`http://192.168.219.197:3001/api/plants/${email}`, {
+          method: "DELETE"
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          alert('식물이 삭제되었습니다.');
+
+          // 2. 화면 갱신 (비서 함수를 다시 불러서 '없음' 화면으로 돌리기)
+          if (typeof checkAndRenderPlantUI === 'function') {
+            await checkAndRenderPlantUI(email);
+          }
+        } else {
+          alert('삭제 실패: ' + result.message);
+        }
+      } catch (err) {
+        console.error("삭제 통신 에러:", err);
+        alert("서버와 연결할 수 없음");
+      }
+    }
+  });
+}
+
+// ==========================================================
+//                         미 구 현
+// ==========================================================
+// 비밀번호 찾기
+// document.addEventListener('submit', (e) => {
+//   if (e.target && e.target.id === 'forgot-form') {
+//     e.preventDefault();
+//     // ⚠️ [BACKEND TODO] : 비밀번호 찾기 API
+//     alert('임시: 비밀번호 찾기 요청');
+//     closeAnyOpenModal();
+//   }
+// });
+
+// 사용자 정보 수정
+// document.addEventListener('submit', (e) => {
+//   const id = e.target.id;
+//   if (['form-edit-name', 'form-edit-phone', 'form-edit-address', 'form-edit-email'].includes(id)) {
+//     e.preventDefault();
+//     // ⚠️ [BACKEND TODO] : 사용자 프로필 업데이트 API
+//     alert('성공적으로 수정되었습니다! (API 연결 필요)');
+//     closeAnyOpenModal();
+//     e.target.reset();
+//   }
+// });
+
+// // 🔐 비밀번호 변경
+// document.addEventListener('submit', (e) => {
+//   if (e.target && e.target.id === 'password-form') {
+//     e.preventDefault();
+//     const newPw = document.getElementById('new-pw').value;
+//     const confirmPw = document.getElementById('confirm-pw').value;
+
+//     if (newPw.length < 4) { alert('비밀번호는 4자 이상이어야 합니다.'); return; }
+//     if (newPw !== confirmPw) { alert('새 비밀번호가 일치하지 않습니다.'); return; }
+
+//     // ⚠️ [BACKEND TODO] : 비밀번호 변경 API
+//     alert('비밀번호가 성공적으로 변경되었습니다!');
+//     closeAnyOpenModal();
+//     e.target.reset();
+//   }
+// });
+
+
+// ========================================================
+//                     기타 : 함수 추가
+// ========================================================
+
 /*
     사용자의 반려식물 정보를 가져와서 화면을 업데이트하는 비서 함수
  */
