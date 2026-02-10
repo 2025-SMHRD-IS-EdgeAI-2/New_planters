@@ -52,6 +52,9 @@ class NotificationRequest(BaseModel):
 
 # ✅ LLM이 반환할 응답(JSON) 형태 (Node/프론트에서 바로 쓰기 좋게)
 class NotificationResponse(BaseModel):
+    status_short: str
+    reason: str
+    action_tip: str
     title: str
     message: str
     action_steps: List[str] = Field(default_factory=list)
@@ -105,8 +108,9 @@ def fallback_notification(req: NotificationRequest) -> NotificationResponse:
     return NotificationResponse(
         title=guide["title"],
         message=f"{req.event_type} 이벤트가 감지되었습니다.",
-        action_steps=guide["tips"],
-        severity=guide["severity"],
+        status_short="상태 확인이 필요해요.",
+        reason=f"{req.event_type} 이벤트가 감지되었습니다.",
+        action_tip="상태를 확인하고 필요 시 조치를 진행해 주세요.",
     )
 
 
@@ -147,6 +151,9 @@ event_date: {req.event_date}
 {{
   "title": "string",
   "message": "string",
+  "status_short": "string",
+  "reason": "string",
+  "action_tip": "string",
   "action_steps": ["string", "string"],
   "severity": "info|warn|urgent"
 }}
@@ -158,68 +165,125 @@ event_date: {req.event_date}
 # -----------------------------
 # 4) LLM 호출 함수
 # -----------------------------
-def call_llm(prompt: str) -> Dict[str, Any]:
-    # ✅ SDK는 환경변수 OPENAI_API_KEY를 읽는 방식이 기본 :contentReference[oaicite:3]{index=3}
-    # ✅ OpenAI 클라이언트 생성
-# - env에서 읽은 키를 명시적으로 넣어주면 더 확실함
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-
-    # ✅ Responses API + JSON 모드 사용
-    # - response_format={"type":"json_object"} 로 JSON만 나오게 강제 :contentReference[oaicite:4]{index=4}
-    resp = client.responses.create(
-        model="gpt-5",
-        input=prompt,
-        response_format={"type": "json_object"},
+def call_llm(prompt: str) -> dict:
+    # OpenAI 클라이언트 생성
+    # - timeout: LLM이 응답 안 줄 때 무한 대기 방지
+    client = OpenAI(
+        api_key=os.getenv("OPENAI_API_KEY"),
+        timeout=20.0
     )
 
-    # SDK가 만들어준 최종 텍스트(= JSON 문자열)
+    # LLM 호출
+    # ❌ response_format 제거 (현재 SDK에서 에러 원인)
+    resp = client.responses.create(
+        model="gpt-5",
+        input=prompt
+    )
+
+    # responses API는 text를 여러 output으로 줄 수 있음
+    # output_text는 "모든 텍스트 응답을 합친 문자열"
     text = resp.output_text
 
-    # JSON 문자열 → dict로 변환
-    return json.loads(text)
+    # ===== JSON 파싱 =====
+    # 우리가 프롬프트에서 "JSON만 출력"하라고 했기 때문에
+    # 정상이라면 바로 json.loads 가능
+    try:
+        return json.loads(text)
 
+    except Exception:
+        # ❗ LLM이 가끔 이런 식으로 응답함
+        # "다음은 결과입니다:\n{ ...json... }"
+        # → 이 경우를 대비한 보정 로직
+
+        start = text.find("{")
+        end = text.rfind("}")
+
+        if start != -1 and end != -1 and end > start:
+            return json.loads(text[start:end + 1])
+
+        # 여기까지 왔다는 건 진짜 JSON이 깨졌다는 뜻
+        # → 상위에서 fallback 처리하게 에러 다시 던짐
+        raise
 
 # -----------------------------
 # 5) 라우터: Node가 호출하는 엔드포인트
 # -----------------------------
 @router.post("/notification")
-async def make_notification(req: NotificationRequest):
+def make_notification(req: NotificationRequest):
     """
-    ✅ Node가 이벤트 발생 시 호출:
-    POST /llm/notification
-    body: NotificationRequest
+    - LLM이 JSON을 이상하게 주거나 필드를 누락해도 서버가 500을 내지 않게 만든다.
+    - 항상 NotificationResponse 스키마를 만족하도록 '보정'해서 반환한다.
+    """
 
-    ✅ 반환:
-    NotificationResponse 형태의 JSON(dict)
-    """
+    # 0) 이벤트 타입에 따른 기본 가이드 (fallback 품질의 기준점)
+    guide = EVENT_GUIDE.get(req.event_type, DEFAULT_GUIDE)
+
     try:
+        # 1) 프롬프트 생성 → LLM 호출
         prompt = build_prompt(req)
-        data = call_llm(prompt)
+        data = call_llm(prompt)  # dict 기대
 
-        # ✅ 최소 검증/정리 (키 없으면 fallback)
-        # - LLM이 가끔 필드 누락할 수 있으니 안전장치
-        if "title" not in data or "message" not in data:
+        # 2) LLM이 dict가 아닌 값을 줄 수 있으니 1차 방어
+        if not isinstance(data, dict):
+            # dict 아니면 바로 fallback
             return fallback_notification(req).model_dump()
 
-        # action_steps / severity 보정
-        if "action_steps" not in data or not isinstance(data["action_steps"], list):
-            data["action_steps"] = EVENT_GUIDE.get(req.event_type, DEFAULT_GUIDE)["tips"][:2]
+        # 3) 필수 필드(required) 누락 체크
+        # NotificationResponse에서 '필수'로 잡아둔 키들
+        required_keys = ["title", "message", "status_short", "reason", "action_tip"]
 
-        if "severity" not in data:
-            data["severity"] = EVENT_GUIDE.get(req.event_type, DEFAULT_GUIDE)["severity"]
+        # 하나라도 없으면 LLM 결과를 신뢰할 수 없으므로 fallback
+        if any(k not in data or not str(data[k]).strip() for k in required_keys):
+            return fallback_notification(req).model_dump()
 
-        # ✅ 최종 응답
-        # (Pydantic으로 한 번 검증해서 깨끗한 JSON으로 반환)
+        # 4) 선택 필드 보정: action_steps
+        steps = data.get("action_steps", [])
+
+        # steps가 리스트가 아니면 강제로 리스트로
+        if not isinstance(steps, list):
+            steps = []
+
+        # 빈 문자열/공백 제거 (LLM이 ["", "   "] 줄 때 방어)
+        steps = [s.strip() for s in steps if isinstance(s, str) and s.strip()]
+
+        # 2개 미만이면 guide 기반으로 채우기
+        if len(steps) < 2:
+            steps = guide.get("tips", ["상태를 확인해 주세요.", "필요 시 조치를 진행해 주세요."])
+
+        data["action_steps"] = steps[:3]
+
+        # 5) 선택 필드 보정: severity
+        # - 이벤트 타입(TEMP_HIGH 등)에 대해 우리가 정한 guide severity가 "정답"
+        # - LLM이 info를 줘도 TEMP_HIGH면 warn으로 '강제'해서 UX가 일관되게 만든다
+
+        default_severity = guide.get("severity", "warn")
+
+        allowed = {"info", "warn", "urgent"}
+        severity_from_llm = data.get("severity")
+
+        # (1) LLM이 이상한 값을 주면 기본값
+        if severity_from_llm not in allowed:
+            data["severity"] = default_severity
+
+        # (2) LLM이 허용값을 줬더라도, 이벤트 가이드가 warn/urgent면 그걸 우선 적용
+        else:
+            data["severity"] = default_severity
+
+        # 6) (선택) title/message가 너무 기계적이면 여기서 후처리 가능
+        # - 지금은 그대로 두되, 나중에 개선 가능 지점
+
+        # 7) 최종 스키마 검증 + 반환
+        # 여기서 NotificationResponse가 한 번 더 검증해줌
         return NotificationResponse(**data).model_dump()
 
     except Exception as e:
-        # ✅ LLM 실패/파싱 실패/네트워크 문제 등 → fallback으로 서비스 유지
-        print(f"❌ LLM 실패: {e}")
+        # 8) 어떤 오류가 나도 500 대신 안정적으로 fallback 반환
+        print("❌ make_notification error:", repr(e), flush=True)
         return fallback_notification(req).model_dump()
+
 
 
 # (선택) 라우터 살아있는지 확인용
 @router.get("/ping")
 def ping():
-    return {"msg": "LLM router alive"}
+    return {"msg": "LLM router alive - v2026-02-10-C1"}
