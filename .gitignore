@@ -2,3 +2,13 @@ python_server/venv/
 __pycache__/
 *.pyc
 .env
+
+# 이미지 파일 예외
+node_server/uploads/
+*.jpg
+*.png
+*.jpeg
+node_server/respi_img/
+*.jpg
+*.png
+*.jpeg
