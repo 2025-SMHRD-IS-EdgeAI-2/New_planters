@@ -492,8 +492,76 @@ document.addEventListener('submit', async (e) => { // async 잊지 말고!
 // ========================================================
 //                    2. 성장 분석
 // ========================================================
+// =========  2-1. 감정상태 요약 (오늘의 메시지)  =============
+// =========================
+// [LLM] 오늘의 메시지/현재상태 불러오기 (Node가 프론트 서빙 기준)
+// =========================
+async function loadLatestLLMNotification() {
+  try {
+    // ✅ 같은 Origin(노드가 html/js도 서빙)이라 상대경로가 정답
+    const res = await fetch("/api/llm/latest-notification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
 
-// ===========    2-1. 식물상태 상세정보 모달    =============
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      console.warn("LLM API 실패:", data);
+      applyFallbackUI(data?.message || "알림을 불러오지 못했어요.");
+      return;
+    }
+
+    const { llm_notification, source_event } = data;
+
+    // 1) 대시보드 '오늘의 메시지' (HTML에 .msg__text 존재)
+    const msgEl = document.querySelector("#page-dashboard .msg__text");
+    if (msgEl) msgEl.textContent = `"${llm_notification.message}"`;
+
+    const sev = llm_notification?.severity;
+
+    // 2) 카드 + 3) 모달 공통: LLM이 내려준 status_short 사용
+    const short = llm_notification?.status_short ?? "상태 확인이 필요해요.";
+
+    const cardDescEl = document.querySelector("#page-dashboard .plant-card__desc");
+    if (cardDescEl) cardDescEl.textContent = short;
+
+    const modalStatusEl = document.querySelector("#modal-plant-detail .plant-detail__statusText");
+    if (modalStatusEl) modalStatusEl.textContent = short;
+
+    // 4) (선택) 모달 카드 값 채우기: TEMP/HUM/LIGHT가 source_event에 있으면 반영
+    // HTML에 id가 current-temp/current-hum/current-light로 잡혀 있음
+    const tempEl = document.getElementById("current-temp");
+    const humEl = document.getElementById("current-hum");
+    const lightEl = document.getElementById("current-light");
+
+    if (tempEl && source_event?.TEMP != null) tempEl.textContent = `${Number(source_event.TEMP).toFixed(1)}°C`;
+    if (humEl && source_event?.HUM != null) humEl.textContent = `${Number(source_event.HUM).toFixed(0)}%`;
+    if (lightEl && source_event?.LIGHT != null) lightEl.textContent = `${Number(source_event.LIGHT).toFixed(0)}`;
+
+  } catch (e) {
+    console.error("LLM 알림 로딩 예외:", e);
+    applyFallbackUI("알림 서버 연결에 실패했어요.");
+  }
+}
+
+function applyFallbackUI(messageText) {
+  // 오늘의 메시지(독립)
+  const msgEl = document.querySelector("#page-dashboard .msg__text");
+  if (msgEl) msgEl.textContent = `"${messageText}"`;
+
+  // 상태요약(카드+모달 동일)
+  const statusShort = "알림을 불러오지 못했어요."; // 원하는 문구로 조정 가능
+
+  const cardDescEl = document.querySelector("#page-dashboard .plant-card__desc");
+  if (cardDescEl) cardDescEl.textContent = statusShort;
+
+  const modalStatusEl = document.querySelector("#modal-plant-detail .plant-detail__statusText");
+  if (modalStatusEl) modalStatusEl.textContent = statusShort;
+}
+
+// ========================================================
+// ===========    2-2. 식물상태 상세정보 모달    =============
+// ========================================================
 async function openPlantDetail() {
     try {
         // 1. 우리가 만든 쿼리 주소로 요청!
