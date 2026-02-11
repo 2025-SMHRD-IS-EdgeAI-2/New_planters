@@ -43,7 +43,7 @@ async def flush_hourly_to_node(node_url: str):
 
             # ✅ 테스트 빨리 하려면 hours=1을 minutes=1로 잠깐 바꿔도 됨
             #  if (now - start) >= timedelta(hours=1) and rows:
-            if (now - start) >= timedelta(minutes=30) and rows:
+            if (now - start) >= timedelta(minutes=1) and rows:
                 n = len(rows)
                 payload = {
                     "plant_id": plant_id,
@@ -65,3 +65,15 @@ async def flush_hourly_to_node(node_url: str):
 
                 except Exception as e:
                     print("❌ hourly 전송 실패:", e)
+
+# 분석 경로 설정 /sensor/analyze가 최종 경로
+@router.post("/analyze")
+async def analyze_sensor(data: SensorIn):
+    print(f"데이터 수신 성공: {data}")
+    return { "event_occurred": False, "event_type": "NORMAL" }
+    
+    # 임계치 테스트용 (나중에 DB 연결 코드로 바꿀 거야)
+    # if data.WATER < 300:
+    #     return {"status": "event", "msg": "물 부족 감지!"}
+    
+    # return {"status": "normal", "msg": "상태 양호"}

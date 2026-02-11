@@ -130,65 +130,70 @@ router.post('/sensors', async (req, res) => {
         if (!plantRows.length) {
             return res.status(400).json({ success:false, message:"plant_info 비어있음" });
         }
+
         const PLANT_ID = plantRows[0].PLANT_ID;
         const { TEMP, HUM, LUX, WATER } = req.body;
-
+        
         // python으로 보낼 payload
         const payload = {
             plant_id: PLANT_ID,
             temp: Number(TEMP),
             hum: Number(HUM),
             light: Number(LUX),
-            soil: Number(WATER)   // 센서 수분값은 soil로 통일
+            soil: Number(WATER)
         };
-        // ✅ 2) Python으로만 전달
-        await axios.post("http://192.168.219.197:8000/sensor/ingest", payload);
-        return res.json({ success:true, message:"Python으로 센서 전송 완료" });
-        
-        // // 3) LLM
-        // // Python FastAPI로 실시간 센서 분석 요청 (팀원 로직)
-        // // 주의: URL은 네 환경에 맞춰서 하나로 통일해 (예: /sensor/analyze)
+        console.log("2. [Node] Python Ingest 호출 시작");
+        // 데이터 수집
+        await axios.post("http://192.168.219.197:8000/sensor/ingest", payload).catch(e => console.error("Ingest 실패:", e.message));
+        // // ✅ 2) Python으로만 전달
+        // const ingest = await axios.post("http://192.168.219.197:8000/sensor/ingest", payload);
+        // const ingest_result = ingest.data ;
+        // // console.log("✅ Ingest 결과:", ingest_result);
+
+        // 데이터 분석
+        console.log("3. [Node] Python Analyze 호출 시작");
+        const analyzeRes = await axios.post("http://192.168.219.197:8000/sensor/analyze", payload);
+        const result = analyzeRes.data || {};
+        let llmResult = null;
+        // 3) LLM
+        // Python FastAPI로 실시간 센서 분석 요청
+        // 주의: URL은 네 환경에 맞춰서 하나로 통일해 (예: /sensor/analyze)
+        // console.log("🧠 Python으로  LLM 분석 요청 중...");
         // const sensorRes = await fetch("http://192.168.219.197:8000/sensor/analyze", {
         //     method: "POST",
         //     headers: { "Content-Type": "application/json" },
         //     body: JSON.stringify(payload),
         // });
+        // const result = await sensorRes.json() || {}; 
+        // console.log("✅ 분석 결과:", result);
 
-        // const result = await sensorRes.json();
-        // console.log("✅ Python 센서 분석 응답:", result);
-        // // [STEP 3] 이벤트 발생 시 LLM 알림 호출 (팀원 로직)
-        // let llmResult = null;
-        // if (result.event_occurred) {
-        //     const llmPayload = {
-        //         plant_id: PLANT_ID,
-        //         event_type: result.event_type,
-        //         sensor_value: result.sensor_value,
-        //         threshold_min: result.threshold_min,
-        //         threshold_max: result.threshold_max,
-        //     };
-
-        //     const llmRes = await fetch("http://localhost:8000/llm/notification", {
-        //         method: "POST",
-        //         headers: { "Content-Type": "application/json" },
-        //         body: JSON.stringify(llmPayload),
-        //     });
-        //     llmResult = await llmRes.json();
-        //     console.log("🎉 LLM 알림 응답:", llmResult);
-        // }
-
-        // // [STEP 4] 최종 응답
-        // return res.status(200).json({
-        //     success: true,
-        //     message: result.event_occurred ? "이벤트 감지 및 알림 완료" : "정상 데이터 처리 완료",
-        //     sensor_analysis: result,
-        //     notification: llmResult
-        // });
+        // [STEP 3] 이벤트 발생 시 LLM 알림 호출
+        if (result?.event_occurred === true) {
+            console.log("➡️ 이벤트 감지! LLM 호출 중...");
+            const llmRes = await axios.post("http://192.168.219.197:8000/llm/notification", {
+                plant_id: PLANT_ID,
+                event_type: result.event_type,
+                sensor_value: result.sensor_value,
+                threshold_min: result.threshold_min,
+                threshold_max: result.threshold_max,
+            });
+            llmResult = llmRes.data;
+        }
+        // [STEP 4] 최종 응답
+        console.log("4. [Node] 분석 완료:", analyzeRes.data);
+        return res.status(200).json({
+            success: true,
+            message: result.event_occurred ? "이벤트 감지 및 알림 완료" : "정상 데이터 처리 완료",
+            sensor_analysis: result,
+            notification: llmResult
+        });
     } catch (err) {
         console.error("❌ 센서 처리 실패:", err.message);
-        res.status(500).json({ success:false, message:err.message });
+        if (!res.headersSent) {
+            res.status(500).json({ success: false, message: err.message });
+        }
     }
 });
-
 
 
 // 2. 1시간 평균 데이터용 라우터 

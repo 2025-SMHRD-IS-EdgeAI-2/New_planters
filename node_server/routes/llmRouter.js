@@ -12,31 +12,26 @@ const db = require("../config/db");          // ✅ 기존 DB 연결 모듈(너�
 const PYTHON_BASE_URL = "http://192.168.219.197:8000";
 
 // ------------------------------------------------------
-// 1) 최신 event log 1건 가져오기 (Promise 방식)
+// 1) 최신 event log N건 가져오기 (Promise 방식)
 // ------------------------------------------------------
-async function fetchLatestEventFromDB() {
-  // ✅ Workbench에서 확인한 쿼리 그대로
+async function fetchLatestEventsFromDB(limit = 3) {
+  // ✅ 안전장치: limit은 1~10 사이만 허용
+  const safeLimit = Math.max(1, Math.min(Number(limit) || 3, 10));
+
   const sql = `
     SELECT *
     FROM event_log
     ORDER BY event_date DESC
-    LIMIT 1
+    LIMIT ${safeLimit}
   `;
 
-  /**
-   * ✅ mysql2/promise면 db.query(sql) 결과가 [rows, fields] 형태
-   * ❌ 콜백(db.query(sql, (err, rows)=>...)) 쓰면
-   *    "Callback function is not available with promise clients." 에러남
-   */
   const result = await db.query(sql);
 
   // ✅ result가 [rows, fields] 형태면 rows만 꺼내기
   const rows = Array.isArray(result) && Array.isArray(result[0]) ? result[0] : result;
 
-  // ✅ 최신 1건 반환 (없으면 null)
-  return rows && rows.length > 0 ? rows[0] : null;
+  return rows && rows.length > 0 ? rows : [];
 }
-
 
 // ------------------------------------------------------
 // 2) DB row → Python LLM payload 형태로 변환(매핑)
@@ -70,34 +65,38 @@ function mapEventToLLMPayload(eventRow) {
 // ✅ 호출 URL 예시(서버가 /api 붙이면): POST http://localhost:3000/api/llm/latest-notification
 router.post("/latest-notification", async (req, res) => {
   try {
-    // (1) 최신 이벤트 조회
-    const latest = await fetchLatestEventFromDB();
+    // (1) 최신 이벤트 3건 조회
+    const events = await fetchLatestEventsFromDB(3);
 
-    if (!latest) {
+    if (!events || events.length === 0) {
       return res.status(404).json({
         ok: false,
         message: "event_log에 데이터가 없습니다.",
       });
     }
 
-    // (2) payload로 변환
-    const payload = mapEventToLLMPayload(latest);
-    console.log("📦 Python으로 보낼 payload:", payload);
+    // (2) events -> payload 변환
+    const payload = {
+      events: events.map(mapEventToLLMPayload),
+    };
 
-    // (3) Python LLM 서버 호출
-    // ✅ Python 쪽: POST /llm/notification
-    const pyRes = await axios.post(`${PYTHON_BASE_URL}/llm/notification`, payload);
+    console.log("📦 Python으로 보낼 payload(events):", payload);
+
+    // (3) Python LLM 서버 호출 (C안: 통합 요약)
+    const pyRes = await axios.post(
+      `${PYTHON_BASE_URL}/llm/notification_summary`,
+      payload
+    );
 
     // (4) 그대로 프론트/웹으로 반환
     return res.status(200).json({
       ok: true,
-      source_event: latest,      // ✅ 어떤 이벤트로 생성했는지(디버깅에 도움)
-      llm_notification: pyRes.data // ✅ Python이 만든 알림 JSON
+      source_events: events,          // ✅ 여러 이벤트
+      llm_notification: pyRes.data,   // ✅ Python이 만든 '통합' 알림 JSON 1개
     });
   } catch (err) {
     console.error("❌ LLM 라우터 실패:", err?.message);
 
-    // Python 서버가 꺼져있거나, 네트워크/키 문제 등
     return res.status(500).json({
       ok: false,
       message: "LLM 알림 생성 실패",

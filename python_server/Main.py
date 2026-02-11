@@ -25,6 +25,7 @@ async def analyze_image(file: UploadFile = File(...)):
 async def _startup():
     asyncio.create_task(sensor.flush_hourly_to_node("http://192.168.219.197:3001/api/hourly"))
 
+# 기본 확인용 엔드포인트
 @app.get("/")
 def read_root():
     return {"msg": "Python Server is Running"}
