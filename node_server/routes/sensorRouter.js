@@ -10,12 +10,15 @@ function toNumberOrNull(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
+
+// 임계치 가져오는 함수
 async function getPlantThresholds(db, plantId) {
     // plant_info -> species_id -> plant_dict(임계치) 조인
     const [rows] = await db.query(`
         SELECT pi.PLANT_ID, pi.SPECIES_ID, pd.*
             FROM plant_info pi
-                JOIN plant_dict pd ON pi.SPECIES_ID = pd.SPECIES_ID
+                JOIN plant_dict pd 
+                    ON pi.SPECIES_ID = pd.SPECIES_ID
             WHERE pi.PLANT_ID = ?
         LIMIT 1
         `, [plantId]);
@@ -32,6 +35,8 @@ async function getPlantThresholds(db, plantId) {
     `, [plantId, eventType, minutes]);
     return rows.length > 0;
     }
+
+// 이벤트 발생 시 이벤트 로그에 담는 함수
 async function insertEventLog(db, payload) {
     const {
         plantId, eventType, sensorType,
@@ -54,6 +59,8 @@ async function insertEventLog(db, payload) {
 
 async function evaluateAndLogEvents(db, plantId, metrics, cooldownMinutes = 30) {
     const th = await getPlantThresholds(db, plantId);
+    console.log(th);
+    
     if (!th) return;
         // metrics는 hourly 평균값이 들어온다고 가정 (temp_avg 등)
         // plant_dict 컬럼명은 너희 DB에 맞게 수정 필요 (아래 TEMP_MIN/MAX 등)
@@ -196,6 +203,7 @@ router.post('/hourly', async (req, res) => {
             lux_avg,
             soil_avg
         } = req.body;
+        // console.log(req.body);
         const light_avg = lux_avg;
 
         // ✅ 1) plant_id가 plant_info에 존재하는지 확인
@@ -316,7 +324,7 @@ router.post('/hourly', async (req, res) => {
             hum_avg,
             lux_avg,
             soil_avg
-        }, 70);
+        }, 30);
         
         res.json({ 
             success: true, 
