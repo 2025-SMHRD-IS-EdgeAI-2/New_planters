@@ -28,6 +28,7 @@ async function main() {
         threshold_min: event.THRESHOLD_MIN,
         threshold_max: event.THRESHOLD_MAX,
         temp: event.TEMP,
+        
         hum: event.HUM,
         light: event.LIGHT,
         soil: event.SOIL,
