@@ -134,7 +134,7 @@ if (e.target.id === 'btn-logout' || e.target.id === 'header-btn-logout') {
       }
 
       try {
-        const res = await fetch(`http://192.168.219.197:3001/api/user/withdraw/${email}`, {
+        const res = await fetch(`http://192.168.219.236:3001/api/user/withdraw/${email}`, {
           method: "DELETE"
         });
         const result = await res.json();
@@ -405,7 +405,7 @@ document.addEventListener('submit', async (e) => {
     }
 
     try {
-      const res = await fetch("http://192.168.219.197:3001/api/user/login", {
+      const res = await fetch("http://192.168.219.236:3001/api/user/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, pw })
@@ -469,7 +469,7 @@ document.addEventListener('submit', async (e) => { // async 잊지 말고!
 
     try {
       // 3. 백엔드 API 호출
-      const response = await fetch('http://192.168.219.197:3001/api/user/signup', {
+      const response = await fetch('http://192.168.219.236:3001/api/user/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -754,7 +754,7 @@ if (btnTimelapsePlay) {
 
     try {
       // 서버로 데이터 요청 (GET 방식)
-      const res = await fetch(`http://192.168.219.197:3001/api/timelapse/${email}?start=${startDate}&end=${endDate}`);
+      const res = await fetch(`http://192.168.219.236:3001/api/timelapse/${email}?start=${startDate}&end=${endDate}`);
       const result = await res.json();
       console.log(result);
       // result.images;
@@ -778,7 +778,7 @@ if (btnTimelapsePlay) {
 // 타임랩스 함수
 function runTimelapse(images) {
   if (!images || images.length === 0) return;
-  const serverUrl = "http://192.168.219.197:3001"; // ⬅️ 친구의 서버 IP 주소 확인!
+  const serverUrl = "http://192.168.219.236:3001"; // ⬅️ 친구의 서버 IP 주소 확인!
   
   // [속도 개선] 브라우저 메모리에 이미지 미리 로드하기
   images.forEach(img => {
@@ -1101,7 +1101,7 @@ async function loadStatistics() {
       // 1. 노드 서버에 분석 데이터 요청!
 
       // URL 뒤에 ?email=... 을 붙여서 전송
-      const response = await fetch(`http://192.168.219.197:3001/api/stats?email=${userEmail}`, {
+      const response = await fetch(`http://192.168.219.236:3001/api/stats?email=${userEmail}`, {
         method: 'GET'
       });
         
@@ -1214,7 +1214,7 @@ async function renderUserProfile(email) {
 
   try {
     console.log(email)
-    const res = await fetch(`http://192.168.219.197:3001/api/user/profile/${email}`);
+    const res = await fetch(`http://192.168.219.236:3001/api/user/profile/${email}`);
     const result = await res.json();
     
     if (result.success) {
@@ -1250,7 +1250,7 @@ document.addEventListener('submit', async (e) => {
     const plantDate = document.getElementById('plant-date')?.value;
 
     try {
-      const res = await fetch("http://192.168.219.197:3001/api/plants/register", {
+      const res = await fetch("http://192.168.219.236:3001/api/plants/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plantName, plantSpecies, plantDate, email })
@@ -1290,7 +1290,7 @@ if (btnPlantDelete) {
     if (confirm('정말 이 반려식물을 삭제하시겠습니까?\n모든 성장 기록이 사라집니다.')) {
       try {
         // 1. 서버에 삭제 요청 (DELETE 방식)
-        const res = await fetch(`http://192.168.219.197:3001/api/plants/${email}`, {
+        const res = await fetch(`http://192.168.219.236:3001/api/plants/${email}`, {
           method: "DELETE"
         });
         const result = await res.json();
@@ -1474,7 +1474,7 @@ async function checkAndRenderPlantUI(email) {
   try {
     // 1. 서버에 해당 유저의 식물 정보 요청 (GET 방식)
     console.log("지금 이메일:", email);
-    const res = await fetch(`http://192.168.219.197:3001/api/plants/${email}`);
+    const res = await fetch(`http://192.168.219.236:3001/api/plants/${email}`);
     const result = await res.json();
     // console.log("서버가 준 결과:", result);
     if (result.success && result.hasPlant) {

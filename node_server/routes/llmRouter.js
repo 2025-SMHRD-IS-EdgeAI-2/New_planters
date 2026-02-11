@@ -9,7 +9,7 @@ const db = require("../config/db");          // ✅ 기존 DB 연결 모듈(너�
 
 // ✅ Python FastAPI 서버 주소(로컬이면 localhost)
 // - 팀 환경에서 Python 서버가 다른 PC/IP에 있으면 여기만 바꾸면 됨
-const PYTHON_BASE_URL = "http://192.168.219.197:8000";
+const PYTHON_BASE_URL = "http://192.168.219.236:8000";
 
 // ------------------------------------------------------
 // 1) 최신 event log N건 가져오기 (Promise 방식)

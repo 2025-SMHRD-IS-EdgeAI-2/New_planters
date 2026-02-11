@@ -144,22 +144,22 @@ router.post('/sensors', async (req, res) => {
         };
         console.log("2. [Node] Python Ingest 호출 시작");
         // 데이터 수집
-        await axios.post("http://192.168.219.197:8000/sensor/ingest", payload).catch(e => console.error("Ingest 실패:", e.message));
+        await axios.post("http://192.168.219.236:8000/sensor/ingest", payload).catch(e => console.error("Ingest 실패:", e.message));
         // // ✅ 2) Python으로만 전달
-        // const ingest = await axios.post("http://192.168.219.197:8000/sensor/ingest", payload);
+        // const ingest = await axios.post("http://192.168.219.236:8000/sensor/ingest", payload);
         // const ingest_result = ingest.data ;
         // // console.log("✅ Ingest 결과:", ingest_result);
 
         // 데이터 분석
         console.log("3. [Node] Python Analyze 호출 시작");
-        const analyzeRes = await axios.post("http://192.168.219.197:8000/sensor/analyze", payload);
+        const analyzeRes = await axios.post("http://192.168.219.236:8000/sensor/analyze", payload);
         const result = analyzeRes.data || {};
         let llmResult = null;
         // 3) LLM
         // Python FastAPI로 실시간 센서 분석 요청
         // 주의: URL은 네 환경에 맞춰서 하나로 통일해 (예: /sensor/analyze)
         // console.log("🧠 Python으로  LLM 분석 요청 중...");
-        // const sensorRes = await fetch("http://192.168.219.197:8000/sensor/analyze", {
+        // const sensorRes = await fetch("http://192.168.219.236:8000/sensor/analyze", {
         //     method: "POST",
         //     headers: { "Content-Type": "application/json" },
         //     body: JSON.stringify(payload),
@@ -170,7 +170,7 @@ router.post('/sensors', async (req, res) => {
         // [STEP 3] 이벤트 발생 시 LLM 알림 호출
         if (result?.event_occurred === true) {
             console.log("➡️ 이벤트 감지! LLM 호출 중...");
-            const llmRes = await axios.post("http://192.168.219.197:8000/llm/notification", {
+            const llmRes = await axios.post("http://192.168.219.236:8000/llm/notification", {
                 plant_id: PLANT_ID,
                 event_type: result.event_type,
                 sensor_value: result.sensor_value,

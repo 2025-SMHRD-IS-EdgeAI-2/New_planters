@@ -40,7 +40,7 @@ async function main() {
 
     // 3️⃣ Python LLM 서버 호출 (★ 이 줄이 지금 안 타고 있었음)
     const res = await axios.post(
-      "http://192.168.219.197:8000/llm/notification_summary",
+      "http://192.168.219.236:8000/llm/notification_summary",
       payload,
       { timeout: 30000 }
     );

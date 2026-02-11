@@ -52,7 +52,7 @@ router.post('/photos', upload.single('image'), async (req, res) => {
         // 파일 절대 경로
         const absolutePath = path.resolve(req.file.path);
         // Python 분석 요청
-        const pythonUrl = 'http://192.168.219.197:8000/image/analyze';
+        const pythonUrl = 'http://192.168.219.236:8000/image/analyze';
         console.log(`📡 Python 분석 요청 중... (${pythonUrl})`);
         const pythonRes = await axios.post(pythonUrl, { file_path: absolutePath });
         console.log(pythonRes.data.success);

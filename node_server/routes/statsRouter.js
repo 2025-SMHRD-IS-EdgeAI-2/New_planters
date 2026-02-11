@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
         }
 
         // 4. FastAPI(파이썬) 분석 서버로 데이터 전송
-        const pythonResponse = await axios.post('http://192.168.219.197:8000/statistics/stats', {
+        const pythonResponse = await axios.post('http://192.168.219.236:8000/statistics/stats', {
             hourly: hourlyData,
             events: eventData
         });
