@@ -20,7 +20,7 @@ async def analyze_image(file: UploadFile = File(...)):
     height = analyze_plant_height(contents)
     return {"status": "success", "height": height}
 
-# 일정 시간(1시간)마다 센서값 평균 내서 노드서버로 전송
+# 일정 시간마다 센서값 평균 내서 노드서버로 전송
 @app.on_event("startup")
 async def _startup():
     asyncio.create_task(sensor.flush_hourly_to_node("http://192.168.219.197:3001/api/hourly"))
