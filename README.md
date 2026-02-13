@@ -81,7 +81,7 @@
 <img width="600" height="500" alt="image" src="https://github.com/user-attachments/assets/ffb41684-0c43-44b7-a502-066f4a4655e6" />
 <br>
 
-## 📌 SW유스케이스
+## 📌 유스케이스
 <img width="600" height="500" alt="image" src="https://github.com/user-attachments/assets/e2c689ea-0c65-4032-9c8d-ee0e9f15d60d" />
 <br>
 
