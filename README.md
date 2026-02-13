@@ -157,16 +157,13 @@
         - 프로젝트 기획
         - 회로 설계 및 센서 연동
         - Node 서버 구축, Web Backend</b></td>
-      
     <td align="center"><b>- DB 설계 및 구축
         - 데이터 분석 (OpenCV)
         - IoT 프로토타입 디자인, 제작</b></td>
-    
     <td align="center"><b>
         - UI/UX 디자인
         - 데이터 분석 (LLM : OpenAI)
         - Web Backend</b></td>
-    
     <td align="center"><b>
         - 프로젝트 기획 보조
         - 자료 조사 및 수집
