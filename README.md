@@ -123,16 +123,16 @@
 <br>
 
 ### 분석 리포트 (식집사 숙련도 점수)
-<img width="729" height="402" alt="image" src="https://github.com/user-attachments/assets/33ef7ce2-ede2-4f5e-8e98-0aaf00606412" />
+<img width="575" height="319" alt="image" src="https://github.com/user-attachments/assets/33ef7ce2-ede2-4f5e-8e98-0aaf00606412" />
 <br>
 
 
 ### 환경 설정 (나의 정보)
-<img width="720" height="397" alt="image" src="https://github.com/user-attachments/assets/b87dcf12-d666-4844-8d52-5ef3189c5839" />
+<img width="575" height="319" alt="image" src="https://github.com/user-attachments/assets/b87dcf12-d666-4844-8d52-5ef3189c5839" />
 <br>
 
 ### 환경 설정 (나의 반려식물)
-<img width="725" height="400" alt="image" src="https://github.com/user-attachments/assets/29707113-02fb-4fcf-a5ff-66a69032a540" />
+<img width="575" height="319" alt="image" src="https://github.com/user-attachments/assets/29707113-02fb-4fcf-a5ff-66a69032a540" />
 <br>
 
 
