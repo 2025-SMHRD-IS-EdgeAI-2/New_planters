@@ -154,19 +154,20 @@
   </tr>
   <tr>
     <td align="center"><b>
-        - 프로젝트 기획
-        - 회로 설계 및 센서 연동
+        - 프로젝트 기획<br>
+        - 회로 설계 및 센서 연동<br>
         - Node 서버 구축, Web Backend</b></td>
-    <td align="center"><b>- DB 설계 및 구축
-        - 데이터 분석 (OpenCV)
+    <td align="center"><b>
+        - DB 설계 및 구축<br>
+        - 데이터 분석 (OpenCV)<br>
         - IoT 프로토타입 디자인, 제작</b></td>
     <td align="center"><b>
-        - UI/UX 디자인
-        - 데이터 분석 (LLM : OpenAI)
+        - UI/UX 디자인<br>
+        - 데이터 분석 (LLM : OpenAI)<br>
         - Web Backend</b></td>
     <td align="center"><b>
-        - 프로젝트 기획 보조
-        - 자료 조사 및 수집
+        - 프로젝트 기획 보조<br>
+        - 자료 조사 및 수집<br>
         - IoT 프로토타입 제작 보조</b></td>
   </tr>
   <tr>
