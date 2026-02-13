@@ -183,6 +183,6 @@
 
 ## 🤾‍♂️ 트러블슈팅
 <br>
-<img width="1057" height="476" alt="image" src="https://github.com/user-attachments/assets/79504ed7-a8e8-4f03-af93-a0327f483e74" />
+<img width="1000" height="500" alt="image" src="https://github.com/user-attachments/assets/79504ed7-a8e8-4f03-af93-a0327f483e74" />
 <br>
-<img width="982" height="524" alt="image" src="https://github.com/user-attachments/assets/69b9adf4-60dd-48c4-b28a-98aa4bbe4cc2" />
+<img width="1000" height="500" alt="image" src="https://github.com/user-attachments/assets/69b9adf4-60dd-48c4-b28a-98aa4bbe4cc2" />
