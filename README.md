@@ -171,11 +171,10 @@
         - IoT 프로토타입 제작 보조</b></td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/자신의username작성해주세요" target='_blank'>github</a></td>
-    <td align="center"><a href="https://github.com/자신의username작성해주세요" target='_blank'>github</a></td>
-    <td align="center"><a href="https://github.com/자신의username작성해주세요" target='_blank'>github</a></td>
-    <td align="center"><a href="https://github.com/자신의username작성해주세요" target='_blank'>github</a></td>
-    <td align="center"><a href="https://github.com/자신의username작성해주세요" target='_blank'>github</a></td>
+    <td align="center"><a href="https://github.com/Hyunews" target='_blank'>github</a></td>
+    <td align="center"><a href="https://github.com/cjs0741" target='_blank'>github</a></td>
+    <td align="center"><a href="https://github.com/bumsoong" target='_blank'>github</a></td>
+    <td align="center"><a href="https://github.com/ilseonjang3-ops" target='_blank'>github</a></td>
   </tr>
 </table>
 
@@ -184,7 +183,7 @@
 프로젝트 진행하는 동안 발생했던 이슈 중 가장 기억에 남았던 문제와 해결 프로세스 나열(2~5가지 정도)
   
 * 문제1<br>
- 문제점 설명 및 해결방안
+<img width="1057" height="476" alt="image" src="https://github.com/user-attachments/assets/79504ed7-a8e8-4f03-af93-a0327f483e74" />
  
 * 문제2<br>
- 문제점 설명 및 해결방안
+<img width="982" height="524" alt="image" src="https://github.com/user-attachments/assets/69b9adf4-60dd-48c4-b28a-98aa4bbe4cc2" />
