@@ -85,11 +85,11 @@
 <br>
 
 ## 📌 서비스 흐름도
-![image](https://user-images.githubusercontent.com/25995055/178401048-d6484bda-a2d7-40e1-998b-2bd195cd9f89.png)
+<img width="1292" height="495" alt="image" src="https://github.com/user-attachments/assets/70210e88-7f29-442d-a46f-9e2705c3ba25" />
 <br>
 
 ## 📌 ER다이어그램
-![image](https://user-images.githubusercontent.com/25995055/169925318-102784c2-893f-4fd7-bec9-a54c44b669d4.png)
+<img width="610" height="564" alt="image" src="https://github.com/user-attachments/assets/6fc72f51-dd7d-439d-8413-33cf57e335a6" />
 <br>
 
 ## 🖥 화면 구성
@@ -141,25 +141,36 @@
 ## 👨‍👩‍👦‍👦 팀원 역할
 <table>
   <tr>
+    <td align="center"><img src="https://pbs.twimg.com/media/B-n6uPYUUAAZSUx.png" width="100" height="100"/></td>
     <td align="center"><img src="https://item.kakaocdn.net/do/fd49574de6581aa2a91d82ff6adb6c0115b3f4e3c2033bfd702a321ec6eda72c" width="100" height="100"/></td>
     <td align="center"><img src="https://mb.ntdtv.kr/assets/uploads/2019/01/Screen-Shot-2019-01-08-at-4.31.55-PM-e1546932545978.png" width="100" height="100"/></td>
     <td align="center"><img src="https://mblogthumb-phinf.pstatic.net/20160127_177/krazymouse_1453865104404DjQIi_PNG/%C4%AB%C4%AB%BF%C0%C7%C1%B7%BB%C1%EE_%B6%F3%C0%CC%BE%F0.png?type=w2" width="100" height="100"/></td>
-    <td align="center"><img src="https://i.pinimg.com/236x/ed/bb/53/edbb53d4f6dd710431c1140551404af9.jpg" width="100" height="100"/></td>
-    <td align="center"><img src="https://pbs.twimg.com/media/B-n6uPYUUAAZSUx.png" width="100" height="100"/></td>
   </tr>
   <tr>
-    <td align="center"><strong>홍O동</strong></td>
-    <td align="center"><strong>홍O동</strong></td>
-    <td align="center"><strong>홍O동</strong></td>
-    <td align="center"><strong>홍O동</strong></td>
-    <td align="center"><strong>홍O동</strong></td>
+    <td align="center"><strong>윤현우</strong></td>
+    <td align="center"><strong>최재선</strong></td>
+    <td align="center"><strong>선범수</strong></td>
+    <td align="center"><strong>장일선</strong></td>
   </tr>
   <tr>
-    <td align="center"><b>Frontend</b></td>
-    <td align="center"><b>Frontend</b></td>
-    <td align="center"><b>Backend</b></td>
-    <td align="center"><b>Backend</b></td>
-    <td align="center"><b>Deep Learning</b></td>
+    <td align="center"><b>
+        - 프로젝트 기획
+        - 회로 설계 및 센서 연동
+        - Node 서버 구축, Web Backend</b></td>
+      
+    <td align="center"><b>- DB 설계 및 구축
+        - 데이터 분석 (OpenCV)
+        - IoT 프로토타입 디자인, 제작</b></td>
+    
+    <td align="center"><b>
+        - UI/UX 디자인
+        - 데이터 분석 (LLM : OpenAI)
+        - Web Backend</b></td>
+    
+    <td align="center"><b>
+        - 프로젝트 기획 보조
+        - 자료 조사 및 수집
+        - IoT 프로토타입 제작 보조</b></td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/자신의username작성해주세요" target='_blank'>github</a></td>
