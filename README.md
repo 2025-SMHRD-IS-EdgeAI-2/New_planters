@@ -101,6 +101,7 @@
 ### 대시보드 (실시간 환경 데이터 및 7일간 평균 데이터)
 <img width="586" height="327" alt="image" src="https://github.com/user-attachments/assets/dc7a0a85-7d38-4890-b9ba-1fc42f093070" />
 <br>
+
 ### 대시보드 (실시간 알림 및 감정 상태 요약)
 <img width="586" height="326" alt="image" src="https://github.com/user-attachments/assets/ba79bede-bfe9-47a0-a6da-854aae184432" />
 <br>
@@ -108,9 +109,11 @@
 ### 성장 기록 (타임랩스)
 <img width="579" height="324" alt="image" src="https://github.com/user-attachments/assets/82b6f3c5-c034-4d35-a1ec-5c4c07bce707" />
 <br>
+
 ### 성장 기록 (성장 히스토리)
 <img width="575" height="319" alt="image" src="https://github.com/user-attachments/assets/3323fa4d-7d9c-4ba0-8353-e88afccc6ea6" />
 <br>
+
 ### 성장 기록 (성장 다이어리)
 <img width="578" height="321" alt="image" src="https://github.com/user-attachments/assets/78fe6203-2bd2-454a-b123-141ff99c9486" />
 <br>
@@ -118,6 +121,7 @@
 ### 분석 리포트 (데이터 통계)
 <img width="565" height="316" alt="image" src="https://github.com/user-attachments/assets/4c8fdce7-3e46-4580-bcb0-64cff8039a59" />
 <br>
+
 ### 분석 리포트 (식집사 숙련도 점수)
 <img width="729" height="402" alt="image" src="https://github.com/user-attachments/assets/33ef7ce2-ede2-4f5e-8e98-0aaf00606412" />
 <br>
@@ -126,6 +130,7 @@
 ### 환경 설정 (나의 정보)
 <img width="720" height="397" alt="image" src="https://github.com/user-attachments/assets/b87dcf12-d666-4844-8d52-5ef3189c5839" />
 <br>
+
 ### 환경 설정 (나의 반려식물)
 <img width="725" height="400" alt="image" src="https://github.com/user-attachments/assets/29707113-02fb-4fcf-a5ff-66a69032a540" />
 <br>
