@@ -465,6 +465,103 @@ def make_notification_summary(req: NotificationSummaryRequest):
     except Exception as e:
         print("❌ make_notification_summary error:", repr(e), flush=True)
         return fallback_summary(events).model_dump()
+    
+    # =============================
+# [NEW] 숙련도 점수 LLM 해석
+# =============================
+from pydantic import BaseModel
+from typing import Optional, Dict, Any, List
+
+class SkillInterpretRequest(BaseModel):
+    email: str
+    plantId: int
+    periodDays: int
+    scores: Dict[str, Any]        # { totalScore, waterScore, envScore, recordScore }
+    level: Dict[str, Any]         # { levelName, nextLevelRemaining }
+    signals: Dict[str, Any]       # sensor_ok_rate, sensor_counts, record ...
+
+class SkillInterpretResponse(BaseModel):
+    title: str
+    summary: str
+    strengths: List[str]
+    weaknesses: List[str]
+    next_actions: List[str]
+    user_type: str
+
+def build_skill_prompt(req: SkillInterpretRequest) -> str:
+    # JSON만 출력하도록 강제하는 프롬프트 스타일(기존 call_llm 방식과 동일)
+    return f"""
+너는 '식집사 숙련도 리포트' 코치야.
+아래 점수/근거 데이터를 보고 사용자에게 이해하기 쉬운 한국어 리포트를 만들어.
+반드시 JSON만 출력해.
+
+[입력 데이터]
+- 총점: {req.scores.get("totalScore")}
+- 물점수: {req.scores.get("waterScore")}
+- 환경점수: {req.scores.get("envScore")}
+- 기록점수: {req.scores.get("recordScore")}
+- 레벨: {req.level.get("levelName")}
+- 다음 레벨까지 남은 점수: {req.level.get("nextLevelRemaining")}
+- 센서 적정비율: {req.signals.get("sensor_ok_rate")}
+- 센서 카운트: {req.signals.get("sensor_counts")}
+- 기록 상태: {req.signals.get("record")}
+
+[출력 JSON 스키마]
+{{
+  "title": "한 줄 제목",
+  "summary": "2~3문장 요약",
+  "strengths": ["강점1", "강점2", "강점3"],
+  "weaknesses": ["약점1", "약점2"],
+  "next_actions": ["다음 행동1", "다음 행동2", "다음 행동3"],
+  "user_type": "유형명(예: 데이터형/감각형/루틴형 등)"
+}}
+
+[규칙]
+- strengths는 3개, next_actions는 3개로 맞춰줘.
+- next_actions는 오늘 바로 할 수 있는 행동으로 구체적으로 써줘.
+- 비난 금지. 동기부여 톤.
+"""
+
+@router.post("/skill_interpret")
+def skill_interpret(req: SkillInterpretRequest):
+    try:
+        prompt = build_skill_prompt(req)
+        data = call_llm(prompt)
+        if not isinstance(data, dict):
+            raise ValueError("LLM returned non-dict")
+
+        # 최소 키 검증(깨지면 fallback)
+        required = ["title", "summary", "strengths", "weaknesses", "next_actions", "user_type"]
+        if any(k not in data for k in required):
+            raise ValueError("LLM missing keys")
+
+        # 타입 보정
+        for k in ["strengths", "weaknesses", "next_actions"]:
+            if not isinstance(data.get(k), list):
+                data[k] = []
+
+        # 길이 보정
+        data["strengths"] = [str(x).strip() for x in data["strengths"] if str(x).strip()][:3]
+        data["weaknesses"] = [str(x).strip() for x in data["weaknesses"] if str(x).strip()][:2]
+        data["next_actions"] = [str(x).strip() for x in data["next_actions"] if str(x).strip()][:3]
+
+        # 부족하면 채우기
+        while len(data["strengths"]) < 3: data["strengths"].append("관리 흐름이 안정적이에요.")
+        while len(data["next_actions"]) < 3: data["next_actions"].append("오늘 센서값 한 번 확인해보세요.")
+
+        return SkillInterpretResponse(**data).model_dump()
+
+    except Exception as e:
+        print("❌ skill_interpret error:", repr(e), flush=True)
+        # fallback
+        return SkillInterpretResponse(
+            title="숙련도 리포트 요약",
+            summary="현재 점수를 바탕으로 관리 패턴을 분석했어요. 작은 루틴을 유지하면 점수는 빠르게 오를 수 있어요.",
+            strengths=["기본 관리가 유지되고 있어요.", "환경 데이터 기반 점검이 가능해요.", "개선 여지가 명확해요."],
+            weaknesses=["특정 항목 점수가 낮아요.", "기록/루틴 데이터가 부족해요."],
+            next_actions=["오늘 토양(수분) 상태를 확인해보세요.", "환경(온습도/광량) 변화가 큰 시간대를 체크해보세요.", "하루 1회 짧은 메모 기록을 남겨보세요."],
+            user_type="성장형"
+        ).model_dump()
 
 # (선택) 라우터 살아있는지 확인용
 @router.get("/ping")

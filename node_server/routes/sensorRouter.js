@@ -154,6 +154,7 @@ router.post('/sensors', async (req, res) => {
         console.log("3. [Node] Python Analyze 호출 시작");
         const analyzeRes = await axios.post("http://192.168.219.236:8000/sensor/analyze", payload);
         const result = analyzeRes.data || {};
+        console.log("이벤트 발생 여부", result);
         let llmResult = null;
         // 3) LLM
         // Python FastAPI로 실시간 센서 분석 요청
@@ -168,6 +169,7 @@ router.post('/sensors', async (req, res) => {
         // console.log("✅ 분석 결과:", result);
 
         // [STEP 3] 이벤트 발생 시 LLM 알림 호출
+        
         if (result?.event_occurred === true) {
             console.log("➡️ 이벤트 감지! LLM 호출 중...");
             const llmRes = await axios.post("http://192.168.219.236:8000/llm/notification", {

@@ -29,21 +29,115 @@
 .report-card__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .report-card__title { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: -0.3px; }
 
-/* ✨ [수정] 레벨 시스템 (점 색상 추가) */
-.level-list { display: flex; flex-direction: column; gap: 12px; }
-.level-item { display: flex; align-items: center; gap: 12px; border: 1px solid rgba(148,163,184,0.25); border-radius: 16px; padding: 14px 14px; position: relative; }
-.level-item.is-current { border-color: rgba(34,197,94,0.55); background: rgba(34,197,94,0.06); }
+/* ===== 레벨 시스템(A안): HTML(.level-steps/.level-step) 기준으로 매칭 ===== */
+/* 리스트 컨테이너: (구버전 .level-list도 같이 지원) */
+#report-skill .level-steps,
+#report-skill .level-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-.level-dot { width: 10px; height: 10px; border-radius: 999px; }
-.level-dot--gray { background: #64748b; }
-.level-dot--blue { background: #3b82f6; }   /* 추가됨 */
-.level-dot--purple { background: #a855f7; }
-.level-dot--gold { background: #f59e0b; }   /* 추가됨 */
+/* 카드: (구버전 .level-item도 같이 지원) */
+#report-skill .level-step,
+#report-skill .level-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 
-.level-info { min-width: 0; }
-.level-name { font-weight: 900; letter-spacing: -0.2px; }
-.level-range { margin-top: 4px; font-size: 12px; color: #64748b; font-weight: 800; }
-.level-badge { margin-left: auto; font-size: 12px; font-weight: 900; color: #fff; background: #16a34a; padding: 7px 10px; border-radius: 999px; }
+  border: 1px solid rgba(148,163,184,0.25);
+  border-radius: 16px;
+  padding: 14px 14px;
+  position: relative;
+  background: #fff;
+
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+/* 왼쪽 묶음(아이콘+텍스트) */
+#report-skill .level-step-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* 아이콘을 dot처럼 보이게 */
+#report-skill .level-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+
+  background: rgba(148,163,184,0.18);
+  border: 1px solid rgba(148,163,184,0.28);
+  font-size: 16px;
+}
+
+/* 텍스트 */
+#report-skill .level-info { min-width: 0; }
+#report-skill .level-title {
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#report-skill .level-range {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 800;
+}
+
+/* 우측 pill */
+#report-skill .level-pill {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 900;
+  color: #0f172a;
+  background: rgba(148,163,184,0.14);
+  border: 1px solid rgba(148,163,184,0.22);
+  padding: 7px 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* ✅ 현재 레벨 강조: JS가 붙이는 is-current는 .level-step에 붙음 */
+#report-skill .level-step.is-current,
+#report-skill .level-item.is-current {
+  border-color: rgba(34,197,94,0.55);
+  background: rgba(34,197,94,0.06);
+  box-shadow: 0 10px 22px rgba(2,132,199,0.08);
+  animation: levelPulseSafe 1.6s ease-in-out infinite;
+}
+
+/* 은은한 shine (전체 화면 덮는 블러 X, 카드 내부만) */
+#report-skill .level-step.is-current::before,
+#report-skill .level-item.is-current::before {
+  content:"";
+  position:absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: translateX(-120%);
+  animation: levelShine 1.8s ease-in-out infinite;
+  pointer-events:none;
+  opacity: .55;
+}
+
+@keyframes levelPulseSafe {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes levelShine {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+/* (참고) 기존 dot 클래스는 HTML에 없으니 유지해도 영향 없음 */
 
 /* ✨ [수정] 세부 점수 막대 (색상 및 높이 복구) */
 .score-row { display: grid; grid-template-columns: 120px 1fr 88px; align-items: center; gap: 12px; }
@@ -115,3 +209,81 @@
 .insight-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
 .insight { border-radius: 14px; padding: 14px 16px; border: 2px solid transparent; }
 .insight.is-green { background: #ecfdf5; border-color: #86efac; }
+
+/* shine/애니메이션이 밖으로 새지 않게 카드에서 잘라버리기 */
+#report-skill .level-step,
+#report-skill .level-item {
+  overflow: hidden;
+}
+
+/* 혹시 다른 요소도 삐져나오면 report 전체에서 가로 스크롤 차단 */
+#page-report {
+  overflow-x: hidden;
+}
+
+#report-skill .level-system h3 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: #111827;
+}
+
+#report-skill .level-summary,
+#report-skill .level-progress-meta {
+  font-family: "Pretendard", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+  color: #334155;
+}
+
+/* ===== [Habit 정렬 보강] 월~일 라벨을 막대 아래로 + 범례 dot 색상 ===== */
+
+/* 1) 각 요일 컬럼: 막대 위, 라벨 아래(세로 정렬) */
+.habit-day{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* 라벨을 확실히 아래로 */
+.habit-day__label{
+  display: block;
+  font-size: 12px;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+/* 2) 막대 영역: 가운데 정렬 유지 + 높이 고정 */
+.habit-bar{
+  width: 100%;
+  height: 140px;            /* 기존 유지 */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;                 /* 살짝 여유 */
+}
+
+/* 3) 범례 dot에 색 지정 (그래프 순서: 기록 -> 분무 -> 물주기) */
+.habit-legend .dot{
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.habit-legend .dot.is-log  { background: #a855f7; }  /* 기록 */
+.habit-legend .dot.is-mist { background: #0ea5e9; }  /* 분무 */
+.habit-legend .dot.is-water{ background: #2d7df6; }  /* 물주기 */
+
+/* 4) (선택) KPI 카드 내부 세로 정렬 깔끔하게 */
+.habit-kpi{
+  align-items: flex-start;
+}
+
+.habit-kpi__label{ margin: 0 0 6px; font-weight: 900; }
+.habit-kpi__value{ margin: 0 0 8px; font-weight: 900; }
+.habit-kpi__desc{ margin: 0; color: #64748b; font-weight: 700; line-height: 1.4; }

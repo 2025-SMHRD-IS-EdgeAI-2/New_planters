@@ -21,10 +21,10 @@ router.get('/history/:email', async (req, res) => {
                         JOIN USER_INFO u 
                             ON p.USER_ID = u.USER_ID
                     WHERE u.EMAIL = ?
-                        AND i.HEIGHT_VAL > 10  
-                        AND i.HEIGHT_VAL < 30
+                        AND i.HEIGHT_VAL > 0  
                         ORDER BY i.CREATED_AT ASC
-            `;
+                        `;
+                        // AND i.HEIGHT_VAL < 30
                         // AND i.CREATED_AT >= '2026-02-09 19:30:00'
                         
         const [rows] = await db.query(sql, [email]);

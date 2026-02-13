@@ -88,7 +88,7 @@
             <div class="plant-card__left">
               <div class="plant-card__icon" aria-hidden="true">🌿</div>
               <div>
-                <div class="plant-card__name">산세테리아 <span class="plant-card__badge">🙂</span></div>
+                <div class="plant-card__name">산세베리아 <span class="plant-card__badge">🙂</span></div>
                 <div class="plant-card__desc">상태가 안정적이에요.</div>
               </div>
             </div>
@@ -201,17 +201,11 @@
               <!-- <button class="thumb-play" type="button" aria-label="재생">▶</button> -->
             </div>
             <div class="timelapse-info">
-              <strong class="timelapse-title">산세테리아</strong>
+              <strong class="timelapse-title">산세베리아</strong>
               <div class="timelapse-date">
                 <input type="date" class="timelapse-input" value="2025-12-01" aria-label="시작일">
                 <span>~</span>
                 <input type="date" class="timelapse-input" value="2026-01-01" aria-label="종료일">
-              </div>
-              <div class="timelapse-meta">
-                <div class="meta-row">
-                  <span class="meta-label">기간</span>
-                  <span class="meta-value">30일</span>
-                </div>
               </div>
               <div class="timelapse-actions">
                 <button class="btn btn--solid" style="width: 100%;">▶ 재생</button>
@@ -252,7 +246,7 @@
           <div class="today-card today-card--v2">
             <div class="today-card__left">
               <h3 class="today-card__title">오늘의 감정 메시지</h3>
-              <p class="today-card__quote">“산세테리아가 새로운 잎을 피웠어요! 🌱”</p>
+              <p class="today-card__quote">“산세베리아가 새로운 잎을 피웠어요! 🌱”</p>
               <p class="today-card__desc">당신의 정성스러운 관리 덕분에 건강하게 자라고 있습니다.</p>
               <div class="actions">
                 <button type="button" class="btn btn--solid" data-open-modal="diary">기록하기</button>
@@ -403,51 +397,146 @@
             </div>
           </section>
 
-          <section class="report-card" aria-label="레벨 시스템">
-            <div class="report-card__head"><h3 class="report-card__title">레벨 시스템</h3></div>
-            <div class="level-list">
-              <div class="level-item">
-                <div class="level-dot level-dot--gray"></div>
-                <div class="level-info"><div class="level-name">초보 식집사</div><div class="level-range">0 - 30점</div></div>
+          <section class="report-card" aria-label="AI 숙련도 해석">
+            <div class="report-card__head">
+              <h3 class="report-card__title">AI 해석 리포트</h3>
+            </div>
+
+            <div id="skill-ai-loading" style="padding:12px; color:#64748b;">
+              AI가 점수를 해석 중입니다...
+            </div>
+
+            <div id="skill-ai-box" class="hidden" style="padding:12px;">
+              <h4 id="skill-ai-title" style="margin:0 0 8px; font-size:16px; font-weight:800;"></h4>
+              <p id="skill-ai-summary" style="margin:0 0 12px; color:#334155;"></p>
+
+              <div style="margin:12px 0;">
+                <div style="font-weight:800; margin-bottom:6px;">강점</div>
+                <ul id="skill-ai-strengths" style="margin:0; padding-left:18px;"></ul>
               </div>
-              <div class="level-item">
-                <div class="level-dot level-dot--blue"></div>
-                <div class="level-info"><div class="level-name">성장하는 식집사</div><div class="level-range">31 - 60점</div></div>
+
+              <div style="margin:12px 0;">
+                <div style="font-weight:800; margin-bottom:6px;">약점</div>
+                <ul id="skill-ai-weaknesses" style="margin:0; padding-left:18px;"></ul>
               </div>
-              <div class="level-item is-current">
-                <div class="level-dot level-dot--purple"></div>
-                <div class="level-info"><div class="level-name">숙련된 식집사</div><div class="level-range">61 - 85점</div></div>
-                <div class="level-badge">현재 레벨</div>
+
+              <div style="margin:12px 0;">
+                <div style="font-weight:800; margin-bottom:6px;">다음 행동</div>
+                <ol id="skill-ai-actions" style="margin:0; padding-left:18px;"></ol>
               </div>
-              <div class="level-item">
-                <div class="level-dot level-dot--gold"></div>
-                <div class="level-info"><div class="level-name">마스터 식집사</div><div class="level-range">86 - 100점</div></div>
+
+              <div style="margin-top:10px; color:#64748b;">
+                유형: <b id="skill-ai-type"></b>
               </div>
             </div>
           </section>
+
+          <!-- ✅ 레벨 시스템 (옵션1: 게임형 Progress) -->
+          <section class="level-system">
+            <div class="level-header">
+              <h3>레벨 시스템</h3>
+              <div class="level-summary">
+                <span id="level-current-badge" class="level-badge">현재 레벨</span>
+                <span id="level-next-text" class="level-next">다음 레벨까지 -</span>
+              </div>
+            </div>
+
+            <!-- 진행도 바 -->
+            <div class="level-progress">
+              <div class="level-progress-bar">
+                <div id="level-progress-fill" class="level-progress-fill" style="width:0%"></div>
+              </div>
+              <div class="level-progress-meta">
+                <span id="level-score-text">점수: -</span>
+                <span id="level-range-text">구간: -</span>
+              </div>
+            </div>
+
+            <!-- 단계 리스트 -->
+            <div class="level-steps">
+              <div class="level-step" data-min="0" data-max="30" data-label="초보 식집사" data-icon="🌿">
+                <div class="level-step-left">
+                  <div class="level-icon">🌿</div>
+                  <div class="level-info">
+                    <div class="level-title">초보 식집사</div>
+                    <div class="level-range">0 - 30점</div>
+                  </div>
+                </div>
+                <div class="level-pill">입문</div>
+              </div>
+
+              <div class="level-step" data-min="31" data-max="60" data-label="성장하는 식집사" data-icon="🌱">
+                <div class="level-step-left">
+                  <div class="level-icon">🌱</div>
+                  <div class="level-info">
+                    <div class="level-title">성장하는 식집사</div>
+                    <div class="level-range">31 - 60점</div>
+                  </div>
+                </div>
+                <div class="level-pill">성장</div>
+              </div>
+
+              <div class="level-step" data-min="61" data-max="85" data-label="숙련된 식집사" data-icon="🏅">
+                <div class="level-step-left">
+                  <div class="level-icon">🏅</div>
+                  <div class="level-info">
+                    <div class="level-title">숙련된 식집사</div>
+                    <div class="level-range">61 - 85점</div>
+                  </div>
+                </div>
+                <div class="level-pill">숙련</div>
+              </div>
+
+              <div class="level-step" data-min="86" data-max="100" data-label="마스터 식집사" data-icon="👑">
+                <div class="level-step-left">
+                  <div class="level-icon">👑</div>
+                  <div class="level-info">
+                    <div class="level-title">마스터 식집사</div>
+                    <div class="level-range">86 - 100점</div>
+                  </div>
+                </div>
+                <div class="level-pill">마스터</div>
+              </div>
+            </div>
+          </section>
+
 
           <section class="report-card" aria-label="세부 점수">
             <div class="report-card__head"><h3 class="report-card__title">세부 점수</h3></div>
             <div class="score-list">
               <div class="score-row">
                 <div class="score-label">물주기 관리</div>
-                <div class="score-bar"><div class="score-fill score-fill--blue" style="width:85%"></div></div>
-                <div class="score-num">85 / 100</div>
+
+                <div class="score-bar">
+                  <div class="score-fill score-fill--blue" id="score-water-bar"></div>
+                </div>
+
+                <div class="score-num" id="score-water-num"></div>
               </div>
+
               <div class="score-row">
                 <div class="score-label">환경 관리</div>
-                <div class="score-bar"><div class="score-fill score-fill--gold" style="width:65%"></div></div>
-                <div class="score-num">65 / 100</div>
+
+                <div class="score-bar">
+                  <div class="score-fill score-fill--gold" id="score-env-bar"></div>
+                </div>
+
+                <div class="score-num" id="score-env-num"></div>
               </div>
+
               <div class="score-row">
                 <div class="score-label">기록 성실도</div>
-                <div class="score-bar"><div class="score-fill score-fill--purple" style="width:60%"></div></div>
-                <div class="score-num">60 / 100</div>
+
+                <div class="score-bar">
+                  <div class="score-fill score-fill--purple" id="score-record-bar"></div>
+                </div>
+
+                <div class="score-num" id="score-record-num"></div>
               </div>
             </div>
           </section>
 
-          <section class="report-card" aria-label="업적">
+        <!-- <section class="report-card" aria-label="업적"> 
             <div class="report-card__head"><h3 class="report-card__title">업적</h3></div>
             <div class="ach-grid">
               <div class="ach-card is-done"><div class="ach-icon">🔥</div><div class="ach-name">7일 연속 관리</div><div class="ach-sub">달성!</div></div>
@@ -455,11 +544,11 @@
               <div class="ach-card is-locked"><div class="ach-icon">⭐</div><div class="ach-name">완벽한 한 달</div><div class="ach-sub">잠금</div></div>
               <div class="ach-card is-locked"><div class="ach-icon">🌿</div><div class="ach-name">식물 5개 관리</div><div class="ach-sub">잠금</div></div>
             </div>
-          </section>
+          </section>-->
         </section>
 
 
-        <section class="report-panel hidden" id="report-stats">
+        <section class="report-panel" id="report-stats">
           <header class="report-head">
             <h2 class="report-head__title">데이터 통계</h2>
             <p class="report-head__sub">환경 데이터와 관리 기록을 분석합니다</p>
@@ -560,65 +649,6 @@
 
           </div>
         </section>
-
-        <!-- <section class="report-panel hidden" id="report-stats">
-          <header class="report-head">
-            <h2 class="report-head__title">데이터 통계</h2>
-            <p class="report-head__sub">환경 데이터와 관리 기록을 분석합니다</p>
-          </header>
-          <div class="stat-grid">
-            <article class="stat-card stat-card--temp">
-              <div class="stat-head">
-                <div class="stat-icon">🌡️</div>
-                <div><div class="stat-title">온도 추이</div><div class="stat-sub">시간대별 온도 변화</div></div>
-              </div>
-              <div class="stat-chart"></div>
-              <div class="stat-x"><span>00</span><span>04</span><span>08</span><span>12</span><span>16</span><span>20</span></div>
-              <div class="stat-summary stat-summary--temp">
-                <div><div class="sum-label">평균 온도</div><div class="sum-value">23.5°C</div></div>
-                <div class="sum-right"><div class="sum-label">최적 범위</div><div class="sum-range">20-26°C</div></div>
-              </div>
-            </article>
-            <article class="stat-card stat-card--hum">
-              <div class="stat-head">
-                <div class="stat-icon">💧</div>
-                <div><div class="stat-title">습도 추이</div><div class="stat-sub">시간대별 습도 변화</div></div>
-              </div>
-              <div class="stat-chart"></div>
-              <div class="stat-x"><span>00</span><span>04</span><span>08</span><span>12</span><span>16</span><span>20</span></div>
-              <div class="stat-summary stat-summary--hum">
-                <div><div class="sum-label">평균 습도</div><div class="sum-value">57.5%</div></div>
-                <div class="sum-right"><div class="sum-label">최적 범위</div><div class="sum-range">50-70%</div></div>
-              </div>
-            </article>
-            <article class="stat-card stat-card--water">
-              <div class="stat-head">
-                <div class="stat-icon">💦</div>
-                <div><div class="stat-title">관수 주기 추이</div><div class="stat-sub">주별 물주기 횟수</div></div>
-              </div>
-              <div class="stat-chart"></div>
-              <div class="stat-x stat-x--weeks">
-                <span><b>15회</b><em>1주차</em></span><span><b>18회</b><em>2주차</em></span><span><b>16회</b><em>3주차</em></span><span><b>20회</b><em>4주차</em></span>
-              </div>
-              <div class="water-sums">
-                <div class="water-box"><div class="sum-label">평균 주기</div><div class="sum-value">4.2일</div></div>
-                <div class="water-box"><div class="sum-label">이번 달</div><div class="sum-value">69회</div></div>
-              </div>
-            </article>
-            <article class="stat-card stat-card--light">
-              <div class="stat-head">
-                <div class="stat-icon">☀️</div>
-                <div><div class="stat-title">조도 추이</div><div class="stat-sub">시간대별 빛의 양</div></div>
-              </div>
-              <div class="stat-chart"></div>
-              <div class="stat-x"><span>00</span><span>04</span><span>08</span><span>12</span><span>16</span><span>20</span></div>
-              <div class="stat-summary stat-summary--light">
-                <div><div class="sum-label">평균 조도</div><div class="sum-value">320 lux</div></div>
-                <div class="sum-right"><div class="sum-label">최적 범위</div><div class="sum-range">200-500 lux</div></div>
-              </div>
-            </article>
-          </div>
-        </section> -->
 
         <section class="report-panel hidden" id="report-habit">
           <header class="report-head">
@@ -897,7 +927,7 @@
     <div class="modal__backdrop" data-close-modal></div>
     <div class="modal__panel modal__panel--lg" role="document">
       <div class="modal__header">
-        <h2 class="modal__title" id="plant-detail-title">🌿 산세테리아 상세 정보</h2>
+        <h2 class="modal__title" id="plant-detail-title">🌿 산세베리아 상세 정보</h2>
         <button class="modal__close" type="button" aria-label="닫기" data-close-modal>×</button>
       </div>
       <div class="modal__body plant-detail">
@@ -1035,9 +1065,9 @@
     <div class="modal__panel">
       <div class="modal__header"><h2 class="modal__title">반려식물 정보</h2><button class="modal__close" type="button" data-close-modal>✕</button></div>
       <form class="modal__body" id="plant-form">
-        <label class="field"><span class="field__label">식물 이름 (애칭)</span><input id="plant-name" class="field__input" type="text" placeholder="예: 산세테리아, 초록이"/></label>
+        <label class="field"><span class="field__label">식물 이름 (애칭)</span><input id="plant-name" class="field__input" type="text" placeholder="예: 산세베리아, 초록이"/></label>
         <label class="field"><span class="field__label">입양일 (키우기 시작한 날)</span><input id="plant-date" class="field__input" type="date" /></label>
-        <label class="field"><span class="field__label">식물 종류</span><input id="plant-species" class="field__input" type="text" placeholder="예: 산세테리아 델리시오사"/></label>
+        <label class="field"><span class="field__label">식물 종류</span><input id="plant-species" class="field__input" type="text" placeholder="예: 산세베리아 델리시오사"/></label>
         <div style="margin-top:16px;"><button class="btn btn--solid btn--full" type="submit">저장하기</button></div>
       </form>
     </div>

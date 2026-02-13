@@ -79,4 +79,44 @@ router.get('/list/:email', async (req, res) => {
     }
 });
 
+// diaryRouter.js
+router.delete('/:memoId', async (req, res) => {
+  try {
+    const { memoId } = req.params;
+    const userEmail = req.query.userEmail;
+
+    if (!memoId || !userEmail) {
+      return res.status(400).json({ ok: false, message: '필수값 누락' });
+    }
+
+    // userEmail -> plant_id 찾기 (기존 방식 유지)
+    const plantid_sql = `
+      SELECT p.plant_id
+      FROM user_info u
+      JOIN plant_info p ON u.user_id = p.user_id
+      WHERE u.email = ?
+      LIMIT 1
+    `;
+    const [plantRows] = await db.query(plantid_sql, [userEmail]);
+    if (!plantRows.length) {
+      return res.status(404).json({ ok: false, message: '연결된 식물 없음' });
+    }
+    const plantId = plantRows[0].plant_id;
+
+    // ✅ 여기만 memo_id로!
+    const delSql = `DELETE FROM timeline WHERE memo_id = ? AND plant_id = ?`;
+    const [result] = await db.query(delSql, [memoId, plantId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ ok: false, message: '삭제 대상 없음' });
+    }
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('타임라인 삭제 실패:', err);
+    return res.status(500).json({ ok: false, message: '서버 오류' });
+  }
+});
+
+
 module.exports = router;

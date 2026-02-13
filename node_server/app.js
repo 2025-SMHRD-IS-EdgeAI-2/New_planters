@@ -16,6 +16,8 @@ const recommendationRoutes = require("./routes/recommendationRouter"); // 관수
 const growthRoutes = require("./routes/growthRouter");          // 관수 분석 라우터
 const llmRoutes = require("./routes/llmRouter");                // llm 라우터
 const diaryRoutes = require("./routes/diaryRouter");            // llm 라우터
+const skillRouter = require("./routes/skillRouter");            // 숙련도점수 라우터
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
@@ -35,6 +37,7 @@ app.use('/api/plants', plantRoutes);
 app.use('/api/timelapse', timelapseRoutes);
 app.use('/api/stats', statsRouter);
 app.use('/api', sensorRoutes);
+app.use("/api/report", skillRouter);
 
 const PORT = 3001; // Node 서버는 3001번으로 방화벽 열어둠
 

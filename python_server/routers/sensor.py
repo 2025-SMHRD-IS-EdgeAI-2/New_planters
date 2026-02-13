@@ -70,10 +70,40 @@ async def flush_hourly_to_node(node_url: str):
 @router.post("/analyze")
 async def analyze_sensor(data: SensorIn):
     print(f"데이터 수신 성공: {data}")
-    return { "event_occurred": False, "event_type": "NORMAL" }
-    
-    # 임계치 테스트용 (나중에 DB 연결 코드로 바꿀 거야)
-    # if data.WATER < 300:
-    #     return {"status": "event", "msg": "물 부족 감지!"}
-    
-    # return {"status": "normal", "msg": "상태 양호"}
+
+    # ✅ 임계치(일단 하드코딩) - 나중에 DB에서 불러오면 됨
+    TEMP_MIN = 21
+    TEMP_MAX = 25
+    HUM_MIN = 40
+    HUM_MAX = 70
+    LUX_MIN = 300
+    SOIL_MAX = 3000   # 너 화면에서 WATER 기준치처럼 쓰는 값이 soil이라면 이렇게
+
+    # ✅ 이벤트 판정
+    events = []
+
+    if data.temp < TEMP_MIN:
+        events.append("TEMP_LOW")
+    elif data.temp > TEMP_MAX:
+        events.append("TEMP_HIGH")
+
+    if data.hum < HUM_MIN:
+        events.append("HUM_LOW")
+    elif data.hum > HUM_MAX:
+        events.append("HUM_HIGH")
+
+    if data.light < LUX_MIN:
+        events.append("LUX_LOW")
+
+    if data.soil > SOIL_MAX:
+        events.append("SOIL_HIGH")  # (토양값 의미에 따라 이름은 바꿔도 됨)
+
+    event_occurred = len(events) > 0
+    event_type = events[0] if event_occurred else "NORMAL"  # 일단 1개만 대표로
+
+    return {
+        "event_occurred": event_occurred,
+        "event_type": event_type,
+        "events": events,   # <- 여러 개도 확인 가능
+        "data": data
+    }

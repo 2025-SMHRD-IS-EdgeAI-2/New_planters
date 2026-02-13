@@ -114,3 +114,36 @@
 .mood { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 0 4px; }
 .mood__btn { width: 52px; height: 52px; border-radius: 14px; border: 1px solid var(--line); background: #fff; cursor: pointer; font-size: 22px; }
 .mood__btn.is-active { border-color: rgba(34,197,94,55); box-shadow: 0 0 0 3px rgba(22,163,74,12); }
+
+/* 카드 메타 영역 정렬 */
+.tcard__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 삭제 버튼 기본 */
+.tcard__delete {
+  margin-left: auto;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background: #f8f8f8;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* hover 효과 */
+.tcard__delete:hover {
+  background: #ff4d4f;
+  border-color: #ff4d4f;
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* 클릭 눌림 효과 */
+.tcard__delete:active {
+  transform: scale(0.95);
+}

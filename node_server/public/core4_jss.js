@@ -53,8 +53,7 @@ document.addEventListener('click', async (e) => {
 
     // [추가된 로직] 이미 로그인 상태라면 '로그인(시작하기)' 버튼 눌렀을 때 바로 대시보드로!
     if (type === 'login' && isLoggedIn) {
-      handlePageNavigation('dashboard'); // 대시보드로 이동
-      setActiveNav('dashboard');         // 상단 메뉴 '대시보드' 활성화
+      navigateTo('dashboard');
       return;                            // 모달 열지 않고 종료
     }
 
@@ -84,8 +83,7 @@ document.addEventListener('click', async (e) => {
   if (e.target.closest('[data-go-home]')) {
     e.preventDefault?.();
     closeAnyOpenModal();
-    showPage('page-home');
-    setActiveNav('home');
+    navigateTo('home');
     return;
   }
 
@@ -94,12 +92,11 @@ document.addEventListener('click', async (e) => {
   if (nav) {
     e.preventDefault();
     const target = nav.getAttribute('data-nav');
-    setActiveNav(target);
-    handlePageNavigation(target);
+    navigateTo(target);
   }
   
   // --- 5. 탭 버튼 클릭 ---
-  handleTabClicks(e);
+  await handleTabClicks(e);
 
   // // --- 6. 로그아웃 버튼 (헤더 & 설정페이지) ---
   // if (e.target.id === 'btn-logout' || e.target.id === 'header-btn-logout') {
@@ -112,11 +109,24 @@ document.addEventListener('click', async (e) => {
   // }
 
   // --- 6. 로그아웃 버튼 ---
+// --- 6. 로그아웃 버튼 ---
 if (e.target.id === 'btn-logout' || e.target.id === 'header-btn-logout') {
   if (confirm('정말 로그아웃 하시겠습니까?')) {
-    localStorage.clear(); // 👈 이거 꼭 추가! 저장소 싹 비우기
+
+    // ✅ 세션 로그인 방식이면 sessionStorage를 비워야 함
+    sessionStorage.removeItem('userEmail');
+    sessionStorage.removeItem('isLoggedIn');
+
+    // ✅ 예전에 localStorage 쓰던 흔적까지 같이 제거(안전)
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('isLoggedIn');
+
+    // 전역 상태도 즉시 반영
+    isLoggedIn = false;
+
     alert('로그아웃 되었습니다.');
-    window.location.reload(); 
+    window.location.hash = '#home';   // 홈으로 보내기
+    window.location.reload();         // 가장 확실하게 초기화
   }
   return;
 }
@@ -126,7 +136,7 @@ if (e.target.id === 'btn-logout' || e.target.id === 'header-btn-logout') {
     const check = prompt('탈퇴하려면 "동의"라고 입력해주세요.');
     
     if (check === '동의') {
-      const email = localStorage.getItem('userEmail');
+      const email = sessionStorage.getItem('userEmail');
       
       if (!email) {
         alert("로그인 정보가 없어서 탈퇴 처리를 할 수 없어!");
@@ -175,6 +185,38 @@ function setActiveNav(target) {
   });
 }
 
+/* ====================================================================
+   Hash Router (정석 라우팅)
+   - URL의 #home, #dashboard ... 를 기준으로 페이지 유지/복원
+   ==================================================================== */
+
+const VALID_ROUTES = new Set(['home', 'dashboard', 'growth', 'report', 'settings']);
+
+function getRouteFromHash() {
+  const raw = (location.hash || '').replace('#', '').trim();
+  return VALID_ROUTES.has(raw) ? raw : 'home';
+}
+
+function renderRoute(route) {
+  // 네비 active 표시
+  setActiveNav(route);
+  // 기존 페이지 전환 + 로그인 잠금 로직 재사용
+  handlePageNavigation(route);
+}
+
+function navigateTo(route) {
+  const next = VALID_ROUTES.has(route) ? route : 'home';
+
+  // hash가 이미 같으면 hashchange가 안 일어나므로 직접 렌더
+  if (location.hash === `#${next}`) renderRoute(next);
+  else location.hash = `#${next}`;
+}
+
+// 해시가 바뀌면 그 페이지로 이동
+window.addEventListener('hashchange', () => {
+  renderRoute(getRouteFromHash());
+});
+
 // 로그인 체크 및 잠금 화면(Blur) 처리
 function handlePageNavigation(target) {
   if (target === 'home') {
@@ -184,13 +226,16 @@ function handlePageNavigation(target) {
 
   const pageId = `page-${target}`;
   showPage(pageId);
-  const pageEl = document.getElementById(pageId);
 
+  const pageEl = document.getElementById(pageId);
+  if (!pageEl) return;
+
+  // 기존 overlay 제거
   const existingOverlay = pageEl.querySelector('.lock-overlay');
   if (existingOverlay) existingOverlay.remove();
 
+  // 로그인 안했으면 잠금
   if (!isLoggedIn) {
-    // 🔒 잠금 모드
     const overlay = document.createElement('div');
     overlay.className = 'lock-overlay';
     overlay.innerHTML = `
@@ -204,34 +249,15 @@ function handlePageNavigation(target) {
       </div>
     `;
     pageEl.appendChild(overlay);
-  } else {
-    // 🔓 잠금 해제
-    initPageTabs(target);
+    return;
   }
-}
 
-function initPageTabs(target) {
+  // 로그인 되어 있으면 탭 초기화
+  initPageTabs(target);
+    // ✅ [추가] 페이지 진입 시 데이터 로드 트리거
   if (target === 'dashboard') {
-    document.getElementById('dash-emotion')?.classList.remove('hidden');
-    document.getElementById('dash-env')?.classList.add('hidden');
-    activateSidebar('#page-dashboard', '[data-dash-tab="emotion"]');
-  } 
-  else if (target === 'growth') {
-    document.querySelectorAll('.growth-panel').forEach(p => {
-        p.classList.remove('active', 'hidden');
-    });
-    document.getElementById('growth-timelapse')?.classList.add('active');
-    activateSidebar('#page-growth', '[data-growth-tab="timelapse"]');
-  } 
-  else if (target === 'report') {
-    document.querySelectorAll('.report-panel').forEach(p => p.classList.add('hidden'));
-    document.getElementById('report-skill')?.classList.remove('hidden');
-    activateSidebar('#page-report', '[data-report-tab="skill"]');
-  } 
-  else if (target === 'settings') {
-    document.querySelectorAll('.settings-panel').forEach(p => p.classList.add('hidden'));
-    document.getElementById('settings-info')?.classList.remove('hidden');
-    activateSidebar('#page-settings', '[data-settings-tab="info"]');
+    refreshDashboard();
+    loadAverageStats();
   }
 }
 
@@ -240,7 +266,7 @@ function activateSidebar(pageId, activeSelector) {
   document.querySelector(activeSelector)?.classList.add('is-active');
 }
 
-function handleTabClicks(e) {
+async function handleTabClicks(e) {
   if (!isLoggedIn && !e.target.closest('[data-nav="home"]')) return;
 
   const dashBtn = e.target.closest('[data-dash-tab]');
@@ -249,22 +275,66 @@ function handleTabClicks(e) {
     activateSidebar('#page-dashboard', `[data-dash-tab="${tab}"]`);
     document.getElementById('dash-emotion')?.classList.toggle('hidden', tab !== 'emotion');
     document.getElementById('dash-env')?.classList.toggle('hidden', tab !== 'env');
+    // ✅ [추가] 환경데이터 탭을 열 때마다 최신 값 로드
+    if (tab === 'env') {
+      refreshDashboard();
+      loadAverageStats();
+    }
   }
   
-  const growthBtn = e.target.closest('[data-growth-tab]');
-  if (growthBtn) {
-    const target = growthBtn.dataset.growthTab;
-    activateSidebar('#page-growth', `[data-growth-tab="${target}"]`);
-    document.querySelectorAll('.growth-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById(`growth-${target}`)?.classList.add('active');
+const growthBtn = e.target.closest('[data-growth-tab]');
+if (growthBtn) {
+  const target = growthBtn.dataset.growthTab;
+  activateSidebar('#page-growth', `[data-growth-tab="${target}"]`);
+  document.querySelectorAll('.growth-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`growth-${target}`)?.classList.add('active');
+
+  // ✅ 추가: 타임라인 탭을 열면 서버에서 기록 불러오기
+  if (target === 'timeline') {
+    await loadTimeline();
   }
+}
 
   const reportBtn = e.target.closest('[data-report-tab]');
   if (reportBtn) {
     const tab = reportBtn.dataset.reportTab;
+
+    // 1) 버튼 active
     activateSidebar('#page-report', `[data-report-tab="${tab}"]`);
-    document.querySelectorAll('.report-panel').forEach(p => p.classList.add('hidden'));
-    document.getElementById(`report-${tab}`)?.classList.remove('hidden');
+
+    // 2) 패널 show/hide (hidden 기준으로 통일)
+    const panels = document.querySelectorAll('#page-report .report-panel');
+    panels.forEach(p => {
+      p.classList.add('hidden');
+      p.classList.remove('is-active');
+    });
+
+    const activePanel = document.getElementById(`report-${tab}`);
+    if (!activePanel) {
+      console.error(`[report] panel not found: report-${tab}`);
+      // fallback: skill로 복귀
+      const skill = document.getElementById('report-skill');
+      skill?.classList.remove('hidden');
+      skill?.classList.add('is-active');
+      activateSidebar('#page-report', '[data-report-tab="skill"]');
+      return;
+    }
+    activePanel.classList.remove('hidden');
+    activePanel.classList.add('is-active');
+
+    // 3) 탭별 데이터 로드 (에러 나도 UI는 보이게 try/catch)
+    try {
+      if (tab === 'skill') await loadSkillReport();
+      if (tab === 'stats') await loadStatistics();   // 실제로 존재함 :contentReference[oaicite:4]{index=4}
+      if (tab === 'habit') {
+        if (typeof loadHabitReport === 'function') {
+          await loadHabitReport();
+        }
+      }
+
+    } catch (err) {
+      console.error(`[report:${tab}] load error`, err);
+    }
   }
 
   const settingBtn = e.target.closest('[data-settings-tab]');
@@ -294,7 +364,7 @@ function hideLoginMessage() {
 
 function updateHeaderToLoggedIn() {
   const authBtn = document.getElementById('auth-buttons');
-  const email = localStorage.getItem('userEmail') || '식집사';
+  const email = sessionStorage.getItem('userEmail') || '식집사';
   
   if (authBtn) {
     authBtn.innerHTML = `
@@ -309,29 +379,30 @@ function updateHeaderToLoggedIn() {
    3. [BACKEND] 초기화 & 데이터 로딩
    ==================================================================== */
 
-// 실시간 업데이트용
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. 기존에 잘 되던 기본 설정 (이건 그대로 둬!)
-  showPage('page-home');
-  setActiveNav('home');
-  refreshDashboard();    // 대시보드 새로고침
-  loadStatistics();      // 분석 로드
-  console.log("🌿 GreenSync Front-end Ready.");
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log("🌿 GreenSync Front-end Ready.");
 
-  // 2. 로그인 상태만 슬쩍 확인 (복잡한 fetch 없이 저장소만 확인)
-  const savedLogin = localStorage.getItem('isLoggedIn');
-  if (savedLogin === 'true') {
-    isLoggedIn = true; // 전역 변수 업데이트
-    if (typeof updateHeaderToLoggedIn === 'function') {
-      updateHeaderToLoggedIn(); // 헤더만 살짝 바꿔줌
+    // 1) 저장된 로그인 상태 먼저 복원
+    const savedLogin = sessionStorage.getItem('isLoggedIn');
+    const savedEmail = sessionStorage.getItem('userEmail');
+
+    isLoggedIn = (savedLogin === 'true' && !!savedEmail);
+
+    if (isLoggedIn) {
+      updateHeaderToLoggedIn?.();
+      checkAndRenderPlantUI(savedEmail);
+
+      // 2) 로그인 상태에서만 데이터 로딩
+      refreshDashboard();
+      loadStatistics();
+      loadAverageStats(); // ✅ 평균 환경 데이터도 여기서 확실히 호출
+    } else {
+      // 데모 잠금/블러 유지 로직이 있으면 여기서 적용
+      console.log("로그인 전 상태: 데이터 로딩 스킵");
     }
-  // ✨ [3. 추가된 부분] 로그인 되어있다면 비서를 시켜서 식물 정보를 가져와!
-  const savedEmail = localStorage.getItem('userEmail');
-  console.log("🏠 로그인 확인 완료! 식물 정보를 불러옵니다...");
-  checkAndRenderPlantUI(savedEmail);
-  }
+  
   // 4. 데이터 페이지 바로 불러오기1 ()
-  const savedEmail = localStorage.getItem('userEmail');
+  // const savedEmail = sessionStorage.getItem('userEmail');
   const chartCanvas = document.getElementById('growthChart');
   if (savedEmail && chartCanvas) {
         initGrowthDashboard(savedEmail); // 페이지 열리자마자 바로 실행!
@@ -356,20 +427,16 @@ document.addEventListener('DOMContentLoaded', () => {
           openPlantDetail(); // 모달 데이터를 채우는 함수 호출!
       });
   }
-  // 8. 대시보드 새로고침
-  refreshDashboard();
-  
-  // 9. ai불러오기(llm)
-  if (isLoggedIn) {
-    // 로그인 상태라면 AI 메시지도 바로 가져와라!
-    loadLatestLLMNotification(); 
-  }
-  
-  refreshDashboard();
-  console.log("🌿 GreenSync Front-end Ready."); 
+    
+    // ✅ 로그인 세팅 끝난 뒤에 라우팅(잠금 판단) 실행
+  renderRoute(getRouteFromHash());
+  lastLoadTime = Date.now();
 
+// ✅ 로그인 상태면 LLM 메시지 로드 1회만
+// if (isLoggedIn) {
+  //loadLatestLLMNotification();
+//}
 });
-
 
 // 다른탭 보다가 다시 와도 로드
 document.addEventListener('visibilitychange', () => {
@@ -414,8 +481,17 @@ document.addEventListener('submit', async (e) => {
 
       if (result.success) {
         // 로그인 성공 시 정보 저장
-        localStorage.setItem('userEmail', email);
-        localStorage.setItem('isLoggedIn', 'true');        
+      sessionStorage.setItem('userEmail', email);
+      sessionStorage.setItem('isLoggedIn', 'true');
+
+      // (중요) 기존 localStorage에 남아있을 수 있으니 지워버리기
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('isLoggedIn');
+
+      isLoggedIn = true;
+      updateHeaderToLoggedIn?.();
+      checkAndRenderPlantUI?.(email);
+
         // 전역 상태 업데이트
         isLoggedIn = true; 
         alert(`${email}님, 반갑습니다! 🌿`);
@@ -429,7 +505,8 @@ document.addEventListener('submit', async (e) => {
 
         // 현재 페이지 리프레시 (대시보드 잠금 해제 등을 위해)
         const activeNav = document.querySelector('.nav__item--active');
-        if (activeNav) handlePageNavigation(activeNav.dataset.nav);
+        const target = activeNav?.getAttribute('data-nav') || getRouteFromHash();
+        navigateTo(target);
 
       } else {
         // 서버에서 거부 (비번 틀림 등)
@@ -676,50 +753,73 @@ function calculateDDay(lastDate, cycle) {
     return `D-${remaining}`;
 }
 
-// 평균 환경 데이터 (최근 7일)
+// 평균 환경 데이터 (최근 7일) - 안전 버전
 async function loadAverageStats() {
-  // console.log("1. 함수 시작!"); // 👈 실행되는지 확인
-    const email = localStorage.getItem('userEmail');
-    if (!email) return;
+  const email = sessionStorage.getItem('userEmail');
+  if (!email) {
+    console.warn("[avg] no email in sessionStorage");
+    return;
+  }
 
-    try {
-        const response = await fetch(`/api/average-stats/${email}`);
-        // console.log("서버 응답 상태",response.status);
-        const result = await response.json();
-        // console.log("DB로부터 받은 데이터",result);
-        
-        if (result.success && result.data.length > 0) {
-            let sumTemp = 0, sumHumi = 0, sumLight = 0;
-            const count = result.data.length;
+  // ✅ DOM id 미스매치 방어 (여기서 바로 잡힘)
+  const tempValEl  = document.getElementById('avg-temp-val');
+  const humiValEl  = document.getElementById('avg-humi-val');
+  const lightValEl = document.getElementById('avg-light-val');
 
-            result.data.forEach(item => {
-                sumTemp += item.TEMP_AVG || 0;
-                sumHumi += item.HUMI_AVG || 0;
-                sumLight += item.LIGHT_AVG || 0;
-            });
+  const tempBarEl  = document.getElementById('avg-temp-bar');
+  const humiBarEl  = document.getElementById('avg-humi-bar');
+  const lightBarEl = document.getElementById('avg-light-bar');
 
-            const finalAvgTemp = (sumTemp / count).toFixed(1);
-            const finalAvgHumi = (sumHumi / count).toFixed(0);
-            const finalAvgLight = (sumLight / count).toFixed(0); // lux는 정수로!
+  if (!tempValEl || !humiValEl || !lightValEl) {
+    console.error("[avg] VALUE element id mismatch",
+      { tempValEl, humiValEl, lightValEl }
+    );
+    return;
+  }
 
-            // 1. 화면에 숫자 꽂아주기
-            document.getElementById('avg-temp-val').textContent = `${finalAvgTemp}°C`;
-            document.getElementById('avg-humi-val').textContent = `${finalAvgHumi}%`;
-            document.getElementById('avg-light-val').textContent = `${finalAvgLight} lux`;
+  try {
+    const response = await fetch(`/api/average-stats/${encodeURIComponent(email)}`);
+    const result = await response.json();
 
-            // 2. 바(Bar) 퍼센트 조절하기 (조도 2000 기준 반영 ✨)
-            const tempPercent = Math.min((finalAvgTemp / 40) * 100, 100);
-            
-            // 💡 조도 퍼센트 계산: (현재값 / 1500) * 100
-            const lightPercent = Math.min((finalAvgLight / 1500) * 100, 100);
-            
-            document.getElementById('avg-temp-bar').style.width = `${tempPercent}%`;
-            document.getElementById('avg-humi-bar').style.width = `${finalAvgHumi}%`;
-            document.getElementById('avg-light-bar').style.width = `${lightPercent}%`; // ✨ 수정된 부분!
-        }
-    } catch (err) {
-        console.error("평균 데이터 업데이트 중 에러:", err);
+    if (!result.success || !Array.isArray(result.data) || result.data.length === 0) {
+      console.warn("[avg] empty result", result);
+      // 비어있으면 UI에 '기록 없음' 같은 문구 넣고 싶으면 여기서 처리
+      return;
     }
+
+    let sumTemp = 0, sumHumi = 0, sumLight = 0;
+    const count = result.data.length;
+
+    result.data.forEach(item => {
+      sumTemp  += Number(item.TEMP_AVG  ?? 0);
+      sumHumi  += Number(item.HUMI_AVG  ?? 0);
+      sumLight += Number(item.LIGHT_AVG ?? 0);
+    });
+
+    const finalAvgTemp  = (sumTemp / count);
+    const finalAvgHumi  = (sumHumi / count);
+    const finalAvgLight = (sumLight / count);
+
+    // ✅ 값 업데이트
+    tempValEl.textContent  = `${finalAvgTemp.toFixed(1)}°C`;
+    humiValEl.textContent  = `${finalAvgHumi.toFixed(0)}%`;
+    lightValEl.textContent = `${finalAvgLight.toFixed(0)} lux`;
+
+    // ✅ bar는 있으면 업데이트, 없으면 그냥 스킵
+    if (tempBarEl) {
+      const tempPercent = Math.min((finalAvgTemp / 40) * 100, 100);
+      tempBarEl.style.width = `${tempPercent}%`;
+    }
+    if (humiBarEl) humiBarEl.style.width = `${Math.min(finalAvgHumi, 100)}%`;
+    if (lightBarEl) {
+      const lightPercent = Math.min((finalAvgLight / 1500) * 100, 100);
+      lightBarEl.style.width = `${lightPercent}%`;
+    }
+
+    console.log("[avg] updated OK");
+  } catch (err) {
+    console.error("[avg] fetch/update error:", err);
+  }
 }
 
 // ========================================================
@@ -733,7 +833,7 @@ const btnTimelapsePlay = document.querySelector('.timelapse-actions .btn');
 
 if (btnTimelapsePlay) {
   btnTimelapsePlay.addEventListener('click', async () => {
-    const email = localStorage.getItem('userEmail');
+    const email = sessionStorage.getItem('userEmail');
     // HTML input[type="date"]에서 값 가져오기
     const dateInputs = document.querySelectorAll('.timelapse-input');
     /*
@@ -804,10 +904,8 @@ function runTimelapse(images) {
   const timer = setInterval(() => {
     // [종료 조건] 모든 이미지를 다 보여줬다면?
     if (index >= images.length) {
-      clearInterval(timer); // 타이머 멈춤
-      alert("전체 타임랩스 재생이 완료되었습니다!");
-      // dateLabel.textContent = originalTitle; // 제목 복구
-      return;
+      clearInterval(timer);
+      return;   // 알림 없이 그냥 종료
     }
     
     // 4. 현재 순서의 이미지 정보 가져오기
@@ -842,7 +940,7 @@ sideMenuItems.forEach(item => {
     item.addEventListener('click', () => {
         // 클릭한 버튼이 '성장 히스토리' 탭을 여는 버튼인지 확인
         if (item.getAttribute('data-growth-tab') === 'history') {
-            const savedEmail = localStorage.getItem('userEmail');
+            const savedEmail = sessionStorage.getItem('userEmail');
             
             // 탭이 전환되어 화면에 캔버스가 나타날 시간을 아주 잠깐(0.1초) 줌
             setTimeout(() => {
@@ -862,7 +960,8 @@ async function initGrowthDashboard(email) {
         // 1. 우리가 만든 노드 API 호출
         const response = await fetch(`/api/growth/history/${email}`);
         const result = await response.json();
-
+        console.log(result);
+        
         if (!result.success || result.history.length === 0) return;
 
         const history = result.history;
@@ -932,7 +1031,7 @@ async function initGrowthDashboard(email) {
 }
 
 // 페이지 로드 시 실행 (로그인된 이메일 사용)
-const userEmail = localStorage.getItem('userEmail');
+const userEmail = sessionStorage.getItem('userEmail');
 initGrowthDashboard(userEmail);
 
 // ======================================================
@@ -964,7 +1063,7 @@ document.addEventListener('submit', async (e) => {
     const fileInput = document.getElementById('diary-file');
     const commentInput = document.getElementById('diary-text');
     const moodInput = document.getElementById('diary-mood'); // hidden input
-    const userEmail = localStorage.getItem('userEmail');
+    const userEmail = sessionStorage.getItem('userEmail');
 
     // 최소한 하나는 입력했는지 확인 (방어 코드)
     if (!fileInput.files[0] && !commentInput.value.trim()) {
@@ -995,7 +1094,13 @@ document.addEventListener('submit', async (e) => {
       if (result.ok) {
         alert('오늘의 기록이 타임라인에 저장됐어! 💚');
         closeAnyOpenModal(); // 모달 닫기
-        location.reload();        
+        // ✅ 타임라인만 새로 로드 (탭 유지)
+          // (선택) 입력 초기화
+        e.target.reset();
+        document.getElementById('file-name-display').innerText = "클릭하여 사진 업로드";
+        document.querySelectorAll('.mood__btn').forEach(btn => btn.classList.remove('is-active'));
+        document.getElementById('diary-mood').value = "";
+  await loadTimeline();     
       } else {
         alert('저장 실패: ' + result.message);
       }
@@ -1008,7 +1113,7 @@ document.addEventListener('submit', async (e) => {
 
 // 타임라인!
 async function loadTimeline() {
-    const userEmail = localStorage.getItem('userEmail');
+    const userEmail = sessionStorage.getItem('userEmail');
     const timelineContainer = document.querySelector('.timeline--cards');
 
     if (!userEmail || !timelineContainer) return;
@@ -1017,8 +1122,9 @@ async function loadTimeline() {
         const response = await fetch(`/api/diary/list/${userEmail}`);
         const result = await response.json();
 
+        // 카드 렌더링
+        timelineContainer.innerHTML = '';
         if (result.ok && result.data.length > 0) {
-            timelineContainer.innerHTML = '';
 
             result.data.forEach(item => {
                 // console.log("📦 서버에서 받은 아이템 하나:", item);
@@ -1050,6 +1156,11 @@ async function loadTimeline() {
                                 <div class="tcard__meta">
                                     <span class="tcard__date">${dateStr}</span>
                                     <span class="tcard__tag">${relativeStr}</span>
+                                      <button type="button"
+                                        class="tcard__delete"
+                                        data-memo-id="${item.MEMO_ID}">
+                                        삭제
+                                      </button>
                                 </div>
                                 ${imageSection}
                                 <div class="tcard__text">${item.MEMO_TEXT || ''}</div>
@@ -1064,6 +1175,40 @@ async function loadTimeline() {
         console.error("타임라인 로드 실패:", err);
     }
 }
+
+  document.addEventListener('click', async (e) => {
+    if (!e.target.classList.contains('tcard__delete')) return;
+
+    const memoId = e.target.dataset.memoId;
+    const userEmail = sessionStorage.getItem('userEmail');
+
+    if (!memoId || !userEmail) return;
+
+    if (!confirm('이 기록을 삭제할까?')) return;
+
+    try {
+        const resp = await fetch(
+          `/api/diary/${memoId}?userEmail=${encodeURIComponent(userEmail)}`,
+          { method: 'DELETE' }
+        );
+
+      const data = await resp.json();
+
+      if (resp.ok && data.ok) {
+        // 방법 1) 화면에서 즉시 제거(깔끔)
+        e.target.closest('article.tcard')?.remove();
+
+        // 방법 2) 그냥 다시 로드(더 안전)
+        // await loadTimeline();
+      } else {
+        alert(data.message || '삭제 실패');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('서버 통신 오류');
+    }
+  });
+
 
 // 💡 보너스: '오늘', '어제' 등을 계산해주는 함수
 function getRelativeTime(dateString) {
@@ -1092,7 +1237,7 @@ function getRelativeTime(dateString) {
 async function loadStatistics() {
     try {
       // 금고(localStorage)에서 이메일 꺼내기
-      const userEmail = localStorage.getItem('userEmail'); 
+      const userEmail = sessionStorage.getItem('userEmail'); 
         
       if (!userEmail) {
         console.log("로그인 정보가 없습니다.");
@@ -1244,7 +1389,7 @@ document.addEventListener('submit', async (e) => {
   if (e.target && e.target.id === 'plant-form') {
     e.preventDefault();
 
-    const email = localStorage.getItem('userEmail');
+    const email = sessionStorage.getItem('userEmail');
     const plantName = document.getElementById('plant-name')?.value; // 모달 안의 input ID
     const plantSpecies = document.getElementById('plant-species')?.value;
     const plantDate = document.getElementById('plant-date')?.value;
@@ -1280,7 +1425,7 @@ const btnPlantDelete = document.getElementById('btn-plant-delete');
 
 if (btnPlantDelete) {
   btnPlantDelete.addEventListener('click', async () => {
-    const email = localStorage.getItem('userEmail'); // 누구 식물인지 알아야 하니까!
+    const email = sessionStorage.getItem('userEmail'); // 누구 식물인지 알아야 하니까!
 
     if (!email) {
       alert("로그인 정보가 없음");
@@ -1335,10 +1480,21 @@ function initPageTabs(target) {
     activateSidebar('#page-growth', '[data-growth-tab="timelapse"]');
   } 
   else if (target === 'report') {
-    document.querySelectorAll('.report-panel').forEach(p => p.classList.add('hidden'));
-    document.getElementById('report-skill')?.classList.remove('hidden');
+    // 패널 전부 숨김 + active 정리
+    document.querySelectorAll('#page-report .report-panel').forEach(p => {
+      p.classList.add('hidden');
+      p.classList.remove('is-active');
+    });
+
+    // skill만 오픈
+    const skill = document.getElementById('report-skill');
+    skill?.classList.remove('hidden');
+    skill?.classList.add('is-active');
+
     activateSidebar('#page-report', '[data-report-tab="skill"]');
-  } 
+    loadSkillReport();
+  }
+
   else if (target === 'settings') {
     document.querySelectorAll('.settings-panel').forEach(p => p.classList.add('hidden'));
     document.getElementById('settings-info')?.classList.remove('hidden');
@@ -1394,6 +1550,155 @@ async function loadLatestLLMNotification() {
   } catch (e) {
     console.error("LLM 알림 로딩 예외:", e);
     applyFallbackUI("알림 서버 연결에 실패했어요.");
+  }
+}
+
+// =========================
+// [REPORT] 숙련도 점수 + LLM 해석 불러오기
+// =========================
+async function loadSkillReport() {
+  try {
+    // 1) 이메일 확보 (지금 프로젝트는 임시 로그인이라 localStorage/전역에서 가져와야 함)
+    //    너희 로그인 구조에 맞게 아래 한 줄만 바꾸면 됨.
+    const days = 30;
+
+    const email = sessionStorage.getItem("userEmail");
+    if (!email) {
+      console.error("로그인 이메일이 없습니다.");
+      return;
+    }
+
+    // 2) 로딩 UI
+    document.getElementById("skill-ai-loading")?.classList.remove("hidden");
+    document.getElementById("skill-ai-box")?.classList.add("hidden");
+
+    // 3) Node API 호출 (점수 + LLM 합본)
+    const res = await fetch("/api/llm/skill-interpret", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, days }),
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      console.warn("skill report api fail:", data);
+      const loading = document.getElementById("skill-ai-loading");
+      if (loading) loading.textContent = "리포트를 불러오지 못했어요.";
+      return;
+    }
+
+    // 4) 점수 UI 반영 (기존 하드코딩 72 등 제거)
+    const score = data.input; // scorePayload
+    const total = Number(score?.scores?.totalScore ?? 0);
+    const levelName = score.level.levelName;
+    const nextRemain = score.level.nextLevelRemaining;
+
+    const numEl = document.querySelector("#report-skill .skill-score__num");
+    if (numEl) numEl.textContent = String(total);
+
+    const rankTextEl = document.querySelector("#report-skill .skill-rank__text");
+    if (rankTextEl) rankTextEl.textContent = levelName;
+
+    const barEl = document.querySelector("#report-skill .skill-bar");
+    const fillEl = document.querySelector("#report-skill .skill-bar__fill");
+    if (barEl) barEl.setAttribute("aria-valuenow", String(total));
+    if (fillEl) fillEl.style.width = `${total}%`;
+
+    const nextEl = document.querySelector("#report-skill .skill-next b");
+    if (nextEl) nextEl.textContent = `${nextRemain}점`;
+    updateLevelSystemUI(total);
+
+    // 5) 세부 점수 UI 반영
+    const water = score.scores.waterScore;
+    const env = score.scores.envScore;
+    const record = score.scores.recordScore;
+
+    document.getElementById("score-water-bar").style.width = water + "%";
+    document.getElementById("score-water-num").textContent = `${water} / 100`;
+
+    document.getElementById("score-env-bar").style.width = env + "%";
+    document.getElementById("score-env-num").textContent = `${env} / 100`;
+
+    document.getElementById("score-record-bar").style.width = record + "%";
+    document.getElementById("score-record-num").textContent = `${record} / 100`;
+
+    // 6) LLM 해석 UI 반영
+    const llm = data.interpretation;
+    document.getElementById("skill-ai-title").textContent = llm.title;
+    document.getElementById("skill-ai-summary").textContent = llm.summary;
+    document.getElementById("skill-ai-type").textContent = llm.user_type;
+
+    const strengths = document.getElementById("skill-ai-strengths");
+    const weaknesses = document.getElementById("skill-ai-weaknesses");
+    const actions = document.getElementById("skill-ai-actions");
+
+    if (strengths) strengths.innerHTML = (llm.strengths || []).map(s => `<li>${s}</li>`).join("");
+    if (weaknesses) weaknesses.innerHTML = (llm.weaknesses || []).map(s => `<li>${s}</li>`).join("");
+    if (actions) actions.innerHTML = (llm.next_actions || []).map(s => `<li>${s}</li>`).join("");
+
+    document.getElementById("skill-ai-loading")?.classList.add("hidden");
+    document.getElementById("skill-ai-box")?.classList.remove("hidden");
+
+  } catch (err) {
+    console.error("loadSkillReport error:", err);
+    const loading = document.getElementById("skill-ai-loading");
+    if (loading) loading.textContent = "에러가 발생했어요.";
+  }
+}
+
+function updateLevelSystemUI(total) {
+  // 1) 옵션1 DOM 요소들
+  const badgeEl = document.getElementById("level-current-badge");
+  const nextEl = document.getElementById("level-next-text");
+  const fillEl = document.getElementById("level-progress-fill");
+  const scoreTextEl = document.getElementById("level-score-text");
+  const rangeTextEl = document.getElementById("level-range-text");
+
+  const steps = Array.from(document.querySelectorAll(".level-system .level-step"));
+
+  if (!steps.length) {
+    console.warn("[LevelSystem] .level-step 요소를 못 찾았어요. HTML 확인 필요");
+    return;
+  }
+
+  // 2) 현재 레벨 찾기
+  const currentStep =
+    steps.find(step => {
+      const min = Number(step.dataset.min);
+      const max = Number(step.dataset.max);
+      return total >= min && total <= max;
+    }) || steps[0];
+
+  const curMin = Number(currentStep.dataset.min);
+  const curMax = Number(currentStep.dataset.max);
+  const curLabel = currentStep.dataset.label || "현재 레벨";
+
+  // 3) 현재 표시(하이라이트)
+  steps.forEach(s => s.classList.remove("is-current"));
+  currentStep.classList.add("is-current");
+
+  // 4) 상단 텍스트
+  if (badgeEl) badgeEl.textContent = `현재 레벨 · ${curLabel}`;
+  if (scoreTextEl) scoreTextEl.textContent = `점수: ${total}`;
+  if (rangeTextEl) rangeTextEl.textContent = `구간: ${curMin} - ${curMax}점`;
+
+  // 5) 진행도(현재 구간 내 퍼센트)
+  const denom = Math.max(1, curMax - curMin);
+  const pct = Math.max(0, Math.min(100, ((total - curMin) / denom) * 100));
+  if (fillEl) fillEl.style.width = `${pct.toFixed(1)}%`;
+
+  // 6) “다음 레벨까지” 텍스트
+  const currentIndex = steps.indexOf(currentStep);
+  const nextStep = steps[currentIndex + 1];
+
+  if (!nextEl) return;
+
+  if (!nextStep) {
+    nextEl.textContent = "최고 레벨이에요! 🎉";
+  } else {
+    const nextMin = Number(nextStep.dataset.min);
+    const remain = Math.max(0, nextMin - total);
+    nextEl.textContent = `다음 레벨까지 ${remain}점`;
   }
 }
 
@@ -1499,7 +1804,7 @@ async function checkAndRenderPlantUI(email) {
         periodEl.textContent = `${diffDays}일 동안 함께 성장했습니다 🌱`;
       }
       
-      console.log("UI 업데이트 완료:", result.plantNAME);
+      console.log("UI 업데이트 완료:", result.plantName);
     } else {
       // 식물이 없는 경우: '없음' 화면 보여주기
       emptyState?.classList.remove('hidden');
@@ -1510,25 +1815,23 @@ async function checkAndRenderPlantUI(email) {
   }
 }
 
-// 환경설정 반응 안하는 문제 해결 함수
-function handlePageNavigation(navTarget) {
-  // 1. 원래 페이지를 바꿔주던 함수를 먼저 실행
-  // (이 함수 이름이 showPage가 아닐 수도 있으니 확인)
+/*function handlePageNavigation(navTarget) {
+  // ✅ 현재 페이지 저장 (새로고침 복원용)
+  sessionStorage.setItem('currentPage', navTarget);
+
   if (typeof showPage === 'function') {
-    showPage(`page-${navTarget}`); 
+    showPage(`page-${navTarget}`);
   }
 
-  // 2. 환경설정(settings)이나 프로필(profile)로 갈 때만 데이터 로드
+  // (settings/profile 로딩 로직은 그대로)
   if (navTarget === 'settings' || navTarget === 'profile') {
     const email = localStorage.getItem('userEmail');
     if (email) {
-      console.log("👤 프로필 데이터 로딩 시작...");
-      renderUserProfile(email); 
+      renderUserProfile(email);
     }
   }
 
-  // 3. 내비게이션 활성화 표시
   if (typeof setActiveNav === 'function') {
     setActiveNav(navTarget);
   }
-}
+}*/

@@ -7,6 +7,11 @@ const router = express.Router();
 const axios = require("axios");              // ✅ Python 서버 호출용
 const db = require("../config/db");          // ✅ 기존 DB 연결 모듈(너희 sensorRouter.js가 쓰는 거랑 동일)
 
+router.get("/__ping", (req, res) => {
+  res.json({ ok: true, route: "llmRouter alive" });
+});
+
+
 // ✅ Python FastAPI 서버 주소(로컬이면 localhost)
 // - 팀 환경에서 Python 서버가 다른 PC/IP에 있으면 여기만 바꾸면 됨
 const PYTHON_BASE_URL = "http://192.168.219.236:8000";
@@ -101,6 +106,62 @@ router.post("/latest-notification", async (req, res) => {
       ok: false,
       message: "LLM 알림 생성 실패",
       error: err?.message,
+    });
+  }
+});
+
+// ✅ 숙련도 점수 기반 LLM 해석 생성
+// POST /api/llm/skill-interpret
+router.post("/skill-interpret", async (req, res) => {
+  try {
+    const { email, days } = req.body || {};
+    if (!email) {
+      return res.status(400).json({ ok: false, message: "email이 필요합니다." });
+    }
+
+    const safeDays = Math.max(7, Math.min(Number(days) || 30, 90));
+
+    const skillRes = await axios.get(
+      "http://localhost:3001/api/report/skill-score",
+      { params: { email, days: safeDays } }
+    );
+
+    if (!skillRes.data?.ok) {
+      return res.status(400).json({
+        ok: false,
+        message: "숙련도 점수 조회 실패",
+        detail: skillRes.data,
+      });
+    }
+
+    const pyRes = await axios.post(
+      `${PYTHON_BASE_URL}/llm/skill_interpret`,
+      skillRes.data
+    );
+
+    return res.json({
+      ok: true,
+      input: skillRes.data,
+      interpretation: pyRes.data,
+    });
+  } catch (err) {
+    console.error("❌ skill-interpret error:", {
+      message: err?.message,
+      url: err?.config?.url,
+      method: err?.config?.method,
+      status: err?.response?.status ?? null,
+      data: err?.response?.data ?? null,
+    });
+
+    return res.status(500).json({
+      ok: false,
+      message: "LLM 숙련도 해석 실패",
+      error: err?.message,
+      where: {
+        url: err?.config?.url ?? null,
+        method: err?.config?.method ?? null,
+        status: err?.response?.status ?? null,
+      },
     });
   }
 });
