@@ -156,19 +156,21 @@
     <td align="left"><b>
         - 프로젝트 기획<br>
         - 회로 설계 및 센서 연동<br>
-        - Node 서버 구축, Web Backend</b></td>
+        - Node 서버 구축<br>
+        - Web Backend</b></td>
     <td align="left"><b>
         - DB 설계 및 구축<br>
         - 데이터 분석 (OpenCV)<br>
-        - IoT 프로토타입 디자인, 제작</b></td>
+        - IoT 디자인, 제작</b></td>
     <td align="left"><b>
         - UI/UX 디자인<br>
-        - 데이터 분석 (LLM : OpenAI)<br>
+        - 데이터 분석<br>
+          (LLM : OpenAI)<br>
         - Web Backend</b></td>
     <td align="left"><b>
         - 프로젝트 기획 보조<br>
         - 자료 조사 및 수집<br>
-        - IoT 프로토타입 제작 보조</b></td>
+        - IoT 제작 보조</b></td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/Hyunews" target='_blank'>github</a></td>
@@ -179,8 +181,6 @@
 </table>
 
 ## 🤾‍♂️ 트러블슈팅
-개념: 문제 해결을 위해 문제의 원인을 논리적이고 체계적으로 찾는 일이며 제품이나 프로세스의 운영을 재개
-프로젝트 진행하는 동안 발생했던 이슈 중 가장 기억에 남았던 문제와 해결 프로세스 나열(2~5가지 정도)
   
 * 문제1<br>
 <img width="1057" height="476" alt="image" src="https://github.com/user-attachments/assets/79504ed7-a8e8-4f03-af93-a0327f483e74" />
